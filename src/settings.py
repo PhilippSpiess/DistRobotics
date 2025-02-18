@@ -104,11 +104,11 @@ MAX_TORQUES = {
     "left_hand_to_pinky_base": 0.5,
     "left_pinky_base_to_center": 0.5,
     "right_hip_yaw": 10,
-    "right_hip_pitch": 10,
+    "right_hip_pitch": 20,
     "right_knee": 20,
     "right_ankle": 20,
     "left_hip_yaw": 10,
-    "left_hip_pitch": 10,
+    "left_hip_pitch": 20,
     "left_knee": 20,
     "left_ankle": 20
 }

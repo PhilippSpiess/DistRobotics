@@ -193,6 +193,6 @@ to enhance the state of the robot.
 For now, only the lower body has been built to prove the concept. 
 Once proper locomotion is achieved, the upper body will be added. 
 
-| Robot V2 | Robot V3 (design improved for flexion) |
+| Robot V2 | Robot V3 |
 |----------|----------|
 | ![Robot V2](images/v2.png) | ![Robot V3](images/v3.png) |

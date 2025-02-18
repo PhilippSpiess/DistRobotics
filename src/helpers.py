@@ -19,7 +19,6 @@ GRAVITY = -9.81
 NUM_ROW_BLOCK = 5  # Define this appropriately
 FRICTION = 1.0  # Define this appropriately
 
-
 # Decorator to time functions
 def timeit(log=True):
     def decorator(func):
@@ -35,7 +34,6 @@ def timeit(log=True):
 
     return decorator
 
-
 # Ensure a folder exists
 def create_folder_if_not_exists(folder_path: str) -> None:
     if not os.path.exists(folder_path):
@@ -50,7 +48,6 @@ def create_random_texture() -> bytes:
     buffer = BytesIO()
     image.save(buffer, format="PNG")
     return buffer.getvalue()
-
 
 # Create a random terrain with texture and friction
 def create_random_terrain(p):
@@ -81,7 +78,6 @@ def create_random_terrain(p):
 
     return texture_id
 
-
 # Add relief elements to the terrain
 def add_relief(p):
     block_half_extents = [1, 1, 0.1]
@@ -105,7 +101,6 @@ def add_relief(p):
             p.changeDynamics(multiBodyId, -1, lateralFriction=friction_block)
 
     return p
-
 
 # Log performance entries
 def add_log_entry(log_message: str, file_name: str = 'performance.log') -> None:

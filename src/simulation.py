@@ -12,12 +12,12 @@ import math
 import os
 import argparse
 
-random.seed(42)
-np.random.seed(42)
-
 from mimic import load_mimic
 from settings import *
 from helpers import timeit, create_random_terrain
+
+random.seed(42)
+np.random.seed(42)
 
 class SimulationEnv:
 
@@ -124,7 +124,7 @@ class SimulationEnv:
         self.tpv_camera_pos = [1, -1, 1]
         self.tpv_camera_target = [0, 0, 0.5]
 
-        self.start_pos = [0, 0, 0.97]
+        self.start_pos = [0, 0, HEIGHT_ROOT]
 
     def get_position_joints(self, robot_id, joint_index):
 
@@ -148,30 +148,13 @@ class SimulationEnv:
         return joint_pos_world_frame
 
     def transform_action(self, values):
-
-        def project_value(x):
-            return 1.25 * x + 0.25 if x <= -0.2 else 1.25 * x - 0.25
-
         if CONTROL == "torque":
-
-            if BLOCKING:
-                values = [0 if -0.2 < x < 0.2 else project_value(x) for x in values]  # Force middle values to be a rigid joint : 0
-
-            values = list(values)
-            result = [value * effort for value, effort in zip(values, self.MAX_TORQUES)]
-
+            return np.where((-0.2 < values) & (values < 0.2), 0,
+                            1.25 * values + np.where(values <= -0.2, 0.25, -0.25)) * self.MAX_TORQUES
         elif CONTROL == "position":
-
-            result = []
-            for j, v in enumerate(values):
-                position = self.MIN_POSITIONS[j] + ((v + 1) / 2) * (self.MAX_POSITIONS[j] - self.MIN_POSITIONS[j])
-                result.append(position)
-
+            return self.MIN_POSITIONS + ((values + 1) / 2) * (self.MAX_POSITIONS - self.MIN_POSITIONS)
         elif CONTROL == "velocity":
-
-            result = np.array(values) * MAX_VELOCITY
-
-        return result
+            return values * MAX_VELOCITY
 
     def initialize_angles(self, robot, init_target_frames=None, start_pos_robot=None):
 
@@ -247,24 +230,6 @@ class SimulationEnv:
 
         return euclidean_distance
 
-    def get_foot_distance_to_object(self, robot):
-
-        redObjectPos, redObjectOrn =self.p.getBasePositionAndOrientation(self.red_objectId)
-        x_redObjectPos = redObjectPos[0]
-        y_redObjectPos = redObjectPos[1]
-
-        foot_pos, foot_ori =self.p.getLinkState(robot, self.LINKS.index("right_foot"))[:2]
-        x_right_foot = foot_pos[0]
-        y_right_foot = foot_pos[1]
-        foot_pos, foot_ori =self.p.getLinkState(robot, self.LINKS.index("left_foot"))[:2]
-        x_left_foot = foot_pos[0]
-        y_left_foot = foot_pos[1]
-
-        euclidean_distance_right = math.sqrt((x_redObjectPos - x_right_foot) ** 2 + (y_redObjectPos - y_right_foot) ** 2)
-        euclidean_distance_left = math.sqrt((x_redObjectPos - x_left_foot) ** 2 + (y_redObjectPos - y_left_foot) ** 2)
-
-        return euclidean_distance_left, euclidean_distance_right
-
     def get_first_person_view(self, robot):
 
         # Get the position and orientation of the head joint for FPV camera
@@ -297,7 +262,7 @@ class SimulationEnv:
 
         return self.vision_object, x_center, y_center, z
 
-    def get_reward(self, robot, upright, joints_data, links_data, previous_upright, previous_joints_data, previous_links_data):
+    def get_reward(self, upright, joints_data, links_data, previous_upright, previous_joints_data, previous_links_data):
 
         done = 0
         reward = 0
@@ -309,7 +274,6 @@ class SimulationEnv:
         energy = np.sum([np.abs(joints_data[j]["torque"]) for j in self.JOINTS])
         non_smoothness = np.sum([np.abs(previous_joints_data[j]["torque"] - joints_data[j]["torque"]) for j in self.JOINTS])
 
-        reward_stable = 0                 # upright ** 2 + 50 * (upright ** 2 - previous_upright ** 2)
         penalty_not_smooth = 0
         penalty_energy = 0
         penalty_fall = -50
@@ -352,7 +316,6 @@ class SimulationEnv:
                     reward, done = penalty_fall, 1
 
         if done==0:
-
             reward += reward_stable + reward_height + penalty_not_smooth + penalty_energy + penalty_floor
             reward += penalty_knees_not_bend + reward_walking + penalty_ankles
 
@@ -367,13 +330,12 @@ class SimulationEnv:
                 print("reward_walking ", reward_walking)
                 print("penalty_ankles ", penalty_ankles)
                 print("penalty_floor ", penalty_floor)
-        else:
-            if VIDEO_RECORDING:
-                video_writer.release()
+        elif VIDEO_RECORDING:
+            video_writer.release()
 
         return reward, done
 
-    def get_reward_mimic(self, robot, frame_counter, end_frame, joints_data, links_data, offset_xy = [0,0]):
+    def get_reward_mimic(self, frame_counter, end_frame, joints_data, links_data, offset_xy = [0,0]):
         # DeepMimic implementation
 
         if self.task not in MIMICKING_TASKS:
@@ -388,7 +350,6 @@ class SimulationEnv:
         joint_indices = {element: self.JOINTS.index(element) for element in
                          JOINT_NAMES_POSE_ESTIMATES_EQUIVALENT_TO_SIMULATION if element in self.JOINTS}
 
-        # joints orientations - 0.65 - joints angle velocity - 0.1 - end effector xyz positions - 0.15 - Center of mass - 0.1 (For now unused)
         orientation_penalty = []
         angle_velocity_penalty = []
         end_effector_penalty = []
@@ -402,7 +363,7 @@ class SimulationEnv:
 
                     angle, angle_velocity = joints_data[element]["angle"], joints_data[element]["angle_velocity"]
 
-                    diff_angle = ( ref_angle - angle )     # / self.MAX_POSITIONS[element] - self.MIN_POSITIONS[element]
+                    diff_angle = (ref_angle - angle)     # / self.MAX_POSITIONS[element] - self.MIN_POSITIONS[element]
 
                     orientation_penalty.append(np.linalg.norm(diff_angle))
                     angle_velocity_penalty.append(np.linalg.norm(ref_angle_velocity - angle_velocity))
@@ -509,7 +470,6 @@ class SimulationEnv:
             x,y,z = self.get_position_joints(robot, joint_index)
 
             joint_state = self.p.getJointState(robot, joint_index)
-            # real angle here - (joint_state[0] - self.MIN_POSITIONS[joint_index] ) / (self.MAX_POSITIONS[joint_index] - self.MIN_POSITIONS[joint_index])   # to normalise to [0, 1]
             angle = joint_state[0]
             angle_velocity = joint_state[1]
             torque = joint_state[3]
@@ -573,7 +533,7 @@ class SimulationEnv:
         else:
             self.p.removeBody(robot)
             robot =self.p.loadURDF(self.HUMANOID_FILE, start_pos_robot, self.upright_orientation, useFixedBase=False)
-            # self.p.resetBasePositionAndOrientation(robot, self.start_pos, self.upright_orientation)
+            # self.p.resetBasePositionAndOrientation(robot, self.start_pos, self.upright_orientation) # this introduces a bounce
 
         self.initialize_angles(robot, init_target_frames, np.array([self.start_pos[0], self.start_pos[1], 0]))
 
@@ -626,14 +586,14 @@ class SimulationEnv:
                 self.p.setJointMotorControl2(bodyUniqueId=robot,
                                         jointIndex=j, # positionGain=0, velocityGain=0,
                                         controlMode=self.p.TORQUE_CONTROL,
-                                        force=action_value)
+                                        force=current_action_value)
             elif CONTROL == "position":
                 self.p.setJointMotorControl2(robot, j, controlMode=self.p.POSITION_CONTROL,
-                                             targetPosition=action_value, # positionGain=0, velocityGain=0, # To adjust
+                                             targetPosition=current_action_value, # positionGain=0, velocityGain=0, # To adjust
                                              force=current_max_torque)
             elif CONTROL == "velocity":
                 self.p.setJointMotorControl2(robot, j, self.p.VELOCITY_CONTROL,
-                                             targetVelocity=action_value, positionGain=0, velocityGain=velocity_gain, # MUST BE ADJUSTED TO MATCH THE REAL MOTOR
+                                             targetVelocity=current_action_value, positionGain=0, velocityGain=velocity_gain, # MUST BE ADJUSTED TO MATCH THE REAL MOTOR
                                              force=current_max_torque)
 
     def close(self):
@@ -700,15 +660,6 @@ class SimulationEnv:
              self.p.stepSimulation()
              time.sleep(self.sleep_time)
 
-        if VIDEO_RECORDING:
-            width, height = 640*2, 480*2
-            _, _, rgba_pixels, _, _ = p.getCameraImage(width, height)
-            frame = np.reshape(np.array(rgba_pixels, dtype=np.uint8), (height, width, 4))
-            frame = frame[:, :, :3]  # Remove the alpha channel if present
-            frame = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)  # Convert to OpenCV format
-            frame = cv2.resize(frame, (width, height))
-            video_writer.write(frame)
-
         if self.robot_type == "full":
             vision_object, x, y, z = self.get_first_person_view(self.robot_id)
 
@@ -717,13 +668,13 @@ class SimulationEnv:
         self.state = self.get_state(self.robot_id)
         self.state.append(self.frame_counter / len(self.mimic_frames))
 
-        reward, self.done = self.get_reward(self.robot_id, new_upright, new_joints_data, new_links_data, self.upright, self.joints_data, self.links_data)
-        reward_mimic = self.get_reward_mimic(self.robot_id, self.frame_counter, self.end_frame, self.joints_data, self.links_data)
+        reward, self.done = self.get_reward(new_upright, new_joints_data, new_links_data, self.upright, self.joints_data, self.links_data)
+        reward_mimic = self.get_reward_mimic( self.frame_counter, self.end_frame, self.joints_data, self.links_data)
         if reward_mimic is None:
             self.done = 1
             reward_mimic = 0
 
-        self.reward = 0.3 * reward + 0.7 * reward_mimic
+        self.reward = WEIGHT_REWARD * reward + WEIGHT_REWARD_MIMIC * reward_mimic
 
         self.action = raw_action
         self.action_transformed = current_action_transformed
@@ -767,7 +718,7 @@ class SimulationParallelEnv(SimulationEnv):
             self.start_frame.append(start_frame)
             self.frame_counter.append(start_frame)
             self.total_robots += 1
-            self.start_pos = [3*int(idx%16)-20, 3*int(idx/16)-20, 0.97]
+            self.start_pos = [3*int(idx%16)-20, 3*int(idx/16)-20, HEIGHT_ROOT]
             robot, upright, joints_data, links_data = self.generate_robot(self.frame_counter[idx])
             self.upright.append(upright)
             self.joints_data.append(joints_data)
@@ -783,7 +734,7 @@ class SimulationParallelEnv(SimulationEnv):
             self.state.append(state)
             self.init_offset_xy.append(self.start_pos[:2])
         else:
-            self.start_pos = [3*int(idx%16)-20, 3*int(idx/16)-20, 0.97]
+            self.start_pos = [3*int(idx%16)-20, 3*int(idx/16)-20, HEIGHT_ROOT]
             self.start_frame[idx], self.end_frame[idx] = self.set_target_frames()
             self.frame_counter[idx] = self.start_frame[idx]
             self.robot_id[idx], self.upright[idx],  self.joints_data[idx], self.links_data[idx] = self.generate_robot(self.frame_counter[idx], self.robot_id[idx])
@@ -813,21 +764,19 @@ class SimulationParallelEnv(SimulationEnv):
         for idx, robot_id in enumerate(self.robot_id):
             current_action_transformed = current_action_transformed_list[idx]
 
-            # VISION : NOT FAST ENOUGH FOR PARALLEL
-
             new_upright, new_joints_data, new_links_data = self.get_links_joints_data(robot_id)
 
             self.state[idx] = self.get_state(robot_id, idx)
             self.state[idx].append(self.frame_counter[idx] / len(self.mimic_frames))
 
-            reward, self.done[idx] = self.get_reward(robot_id, new_upright, new_joints_data, new_links_data, self.upright[idx], self.joints_data[idx], self.links_data[idx])
+            reward, self.done[idx] = self.get_reward(new_upright, new_joints_data, new_links_data, self.upright[idx], self.joints_data[idx], self.links_data[idx])
 
-            reward_mimic = self.get_reward_mimic(robot_id, self.frame_counter[idx], self.end_frame[idx], self.joints_data[idx], self.links_data[idx], self.init_offset_xy[idx])
+            reward_mimic = self.get_reward_mimic(self.frame_counter[idx], self.end_frame[idx], self.joints_data[idx], self.links_data[idx], self.init_offset_xy[idx])
             if reward_mimic is None:
                 self.done[idx] = 1
                 reward_mimic = 0
 
-            self.reward[idx] = 0.3 * reward + 0.7 * reward_mimic
+            self.reward[idx] = WEIGHT_REWARD * reward + WEIGHT_REWARD_MIMIC * reward_mimic
 
             self.action[idx] = raw_actions[idx]
             self.action_transformed[idx] = current_action_transformed
@@ -848,9 +797,8 @@ class RandomAgent:
         self.dim_action = dim_action
 
     def act(self, state):
-        # random_array = np.random.uniform(-1, 1, size=self.dim_action)
+        # random_array = np.random.uniform(-1, 1, size=self.dim_action) # array = [0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
         random_array = np.full(self.dim_action, -1)
-        array = [0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
         return random_array
 
 

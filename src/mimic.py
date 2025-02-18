@@ -250,7 +250,7 @@ def store_frames(task):
     data = {"num_frames": len(results_save), "frames": results_save}
 
     # Save the results in JSON format
-    with open(f'mimic/{task}.json', 'w') as json_file:
+    with open(get_json_path(task), 'w') as json_file:
         json.dump(data, json_file, indent=4)
 
 

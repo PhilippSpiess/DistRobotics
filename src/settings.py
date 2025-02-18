@@ -4,42 +4,6 @@
 import os
 import cv2
 
-#########        LEARNING PARAMETERS         #########
-
-LAYER_SIZE = 256
-LEARNING_RATE = 0.00001
-TRAINING_BATCH = 50000
-MINI_BATCH_SIZE = 64
-NUM_WORKERS = 64
-ENTROPY_BONUS = 0.01
-
-TASK = "standing"            # standing standing_up walking jumping_mimic standing_robust
-ROBOT_TYPE = "legs"          # legs half full
-TESTING = False
-MAX_EPISODES = 500000
-
-REAL = False
-REAL_TRAINING = False
-
-MAX_EPISODE_LENGTH = 300     # This is equivalent to 10 seconds
-PARALLEL = True
-SHUFFLE = True
-CURIOSITY_BONUS = 0.0
-ENTROPY_DECAY = 1.0
-LEARNING_DECAY = 1.0
-LOSS_CLIPPING = 0.2
-GAMMA = 0.99
-EPOCHS = 10
-GOAL = 1000
-if "standing" in TASK:
-    GOAL = 80
-elif "walking" in TASK:
-    GOAL = 300
-LAMDA = 0.9
-DEFAULT_TRAINING_BATCH = 50000
-
-#########         SIMULATION PARAMETERS        #########
-
 # THE "" are placeholders so that new tasks can be added without changing the dimensions of the neural network
 TASKS = ["standing", "standing_up", "walking", "jumping_mimic", "walking_low_energy","walking_robust","walking_mimic","standing_robust","squat_mimic","","","","","","","","","","",""]
 MIMICKING_TASKS = ["jumping_mimic", "walking_mimic", "squat_mimic"]
@@ -83,7 +47,9 @@ MIMIC_CONSTANTS = {
     "CENTER_MASS_SCALING": 0,  # in the paper as 10
 }
 
-#########             ROBOT PARAMETERS           #########
+WEIGHT_REWARD = 0.3
+WEIGHT_REWARD_MIMIC = 0.7
+HEIGHT_ROOT = 0.97
 
 # Define robot types as constants
 ROBOT_TYPE_LEGS = "legs"
@@ -137,14 +103,14 @@ MAX_TORQUES = {
     "left_ring_base_to_center": 0.5,
     "left_hand_to_pinky_base": 0.5,
     "left_pinky_base_to_center": 0.5,
-    "right_hip_yaw": 7,
-    "right_hip_pitch": 7,
-    "right_knee": 7,
-    "right_ankle": 7,
-    "left_hip_yaw": 7,
-    "left_hip_pitch": 7,
-    "left_knee": 7,
-    "left_ankle": 7
+    "right_hip_yaw": 10,
+    "right_hip_pitch": 10,
+    "right_knee": 20,
+    "right_ankle": 20,
+    "left_hip_yaw": 10,
+    "left_hip_pitch": 10,
+    "left_knee": 20,
+    "left_ankle": 20
 }
 
 MIN_POSITIONS = {
@@ -446,13 +412,3 @@ JOINT_NAMES_POSE_ESTIMATES_EQUIVALENT_TO_SIMULATION = [
     "left_foot",
     "right_foot"
 ]
-
-########         OpenCV video writer        ########
-
-VIDEO_RECORDING = False
-video_path = "pybullet_recording.mp4"
-fps = 30
-width, height = 640*2, 480*2
-fourcc = cv2.VideoWriter_fourcc(*"mp4v")
-if VIDEO_RECORDING:
-    video_writer = cv2.VideoWriter(video_path, fourcc, fps, (width, height))

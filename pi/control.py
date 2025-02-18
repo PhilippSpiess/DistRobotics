@@ -20,7 +20,7 @@ from adafruit_motor import servo
 from settings import TASKS
 from learning import PPOAgent, TRAINING_BATCH
 
-MANUAL_CALIBRATION = True
+MANUAL_CALIBRATION = False
 AUTO_CALIBRATION = True
 
 ROBOT_TYPE = "legs"
@@ -28,7 +28,7 @@ TASK = "standing"
 TASK_STATE = [1 if TASK == t else 0 for t in TASKS]
 
 SIMPLE_TEST = False
-TEST_FLEXION = False
+TEST_FLEXION = True
 PRODUCTION = False
 
 STATES = []  # NEXT_STATES is STATES Shifted by one
@@ -181,8 +181,6 @@ def get_root_orientation():
     pitch = math.atan2(accel_y, math.sqrt(accel_x ** 2 + accel_z ** 2))
     roll = math.atan2(-accel_x, accel_z)
 
-    # Yaw is often calculated using a complementary filter or a more complex sensor fusion algorithm.
-
     return pitch, roll
 
 
@@ -317,6 +315,7 @@ def quit_gpio():
 try:
     control_motors(np.full(NUM_MOTORS, 0))
     input("Turn power on and press enter: ")
+    time.sleep(3)
     control_motors(np.full(NUM_MOTORS, 0))
 
     if MANUAL_CALIBRATION:
@@ -402,9 +401,6 @@ try:
         # current_rpms = read_speeds(interval)
         current_speeds = (np.array(angles) - np.array(previous_angles)) / interval
 
-        # print("Angles encoder", angles_encoder)
-        # print("Pulse counts", pulse_counts)
-
         print("Step time: ", np.round(interval, 4))
         if PRINTING:
             print("Angles; ", np.round(angles, 2))
@@ -476,12 +472,7 @@ try:
             print(f"Goal speed: {np.round(goal_speeds, 2)}")
             print(f"Filtered duty Cycles: {np.round(duty_cycles, 2)}")
 
-        # if np.any(np.array(angles) > np.array(MAX_ANGLES)) or np.any(np.array(angles) < np.array(MIN_ANGLES)):
-        #    quit_gpio()
-        #    break
-
         control_motors(duty_cycles)
-        # current_directions = np.where(duty_cycles < 0, -1, 1)
         print("")
 
 except KeyboardInterrupt:

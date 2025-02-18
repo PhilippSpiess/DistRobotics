@@ -3,41 +3,35 @@
 
 import os
 import argparse
-
 import random
-import pylab
+import matplotlib.pyplot as plt
 import numpy as np
 import tensorflow as tf
-
 from tensorflow.keras.models import Model, load_model
 from tensorflow.keras.layers import Input, Dense
 from tensorflow.keras.optimizers import Adam, RMSprop
 from tensorflow.keras import backend as K
 import copy
-
 from threading import Thread, Lock
 from multiprocessing import Process, Pipe
 import time
 
-pylab.figure(figsize=(20, 10))
-pylab.subplots_adjust(left=0.05, right=0.95, top=0.95, bottom=0.05)
+from simulation import SimulationEnv, SimulationParallelEnv
+from helpers import timeit, create_folder_if_not_exists, add_log_entry
+from parameters import *
+
+plt.figure(figsize=(20, 10))
+plt.subplots_adjust(left=0.05, right=0.95, top=0.95, bottom=0.05)
 
 tf.random.set_seed(42)
 random.seed(42)
 np.random.seed(42)
 
-from simulation import SimulationEnv, SimulationParallelEnv
-from helpers import timeit, create_folder_if_not_exists, add_log_entry
-from settings import *
-
 gpus = tf.config.list_physical_devices('GPU')
-if len(gpus) > 0:
-    print(f'GPUs {gpus}')
-    try:
-        tf.config.experimental.set_memory_growth(gpus[0], True)
-        print("Using GPU:", gpus[0].name)
-    except RuntimeError:
-        pass
+for gpu in gpus:
+    tf.config.set_logical_device_configuration(
+        gpu, [tf.config.LogicalDeviceConfiguration(memory_limit=4096)]
+    )
 
 class ActorModel:
 
@@ -288,15 +282,15 @@ class PPOAgent:
         self.average_.append(sum(self.scores_[-50:]) / len(self.scores_[-50:]))
 
         if episode % 500 == 0:
-            pylab.plot(self.episodes_, self.scores_, 'blue')
-            pylab.plot(self.episodes_, self.average_, 'red')
-            pylab.plot(self.episodes_, self.scores_deterministic_, 'black')
-            pylab.title(FOLDER_NAME.replace("_"," ") + " PPO training cycle", fontsize=10)
-            pylab.ylabel('Score', fontsize=18)
-            pylab.xlabel('Episodes', fontsize=18)
-            pylab.grid(True)
-            pylab.legend(['Exploring', 'Exploring_avg', 'Deterministic'])
-            pylab.savefig(FOLDER_NAME+"/"+self.env_name + ".png")
+            plt.plot(self.episodes_, self.scores_, 'blue')
+            plt.plot(self.episodes_, self.average_, 'red')
+            plt.plot(self.episodes_, self.scores_deterministic_, 'black')
+            plt.title(FOLDER_NAME.replace("_"," ") + " PPO training cycle", fontsize=10)
+            plt.ylabel('Score', fontsize=18)
+            plt.xlabel('Episodes', fontsize=18)
+            plt.grid(True)
+            plt.legend(['Exploring', 'Exploring_avg', 'Deterministic'])
+            plt.savefig(FOLDER_NAME+"/"+self.env_name + ".png")
 
         if episode==MAX_EPISODES:
             add_log_entry(FOLDER_NAME + " score " + str(self.average_[-1]) + " deterministic " + str(self.scores_deterministic_[-1]) + " episode " + str(episode), file_name="results.log")
@@ -515,7 +509,7 @@ if __name__ == "__main__":
     if REAL_TRAINING:
         agent = PPOAgent(env_name, render=False, task=TASK, robot_type=ROBOT_TYPE)
         while True:
-            # TODO: IF REQUEST COMES with DATA - CONTINUOUS LEARNING
+            # TODO: get the data from the raspberry pi
             # agent.run_real(states, next_states, actions, rewards, predictions, dones)
             pass
     elif REAL:

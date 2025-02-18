@@ -74,7 +74,6 @@ libcamera-still -t 0 --timelapse 1000 -n -o "image_%04d.jpg"
 | **DeepMimic** (Peng et al., 2018) | Presents an imitation learning framework that trains robots to mimic human-like motions from motion capture data. |
 | **Continuous Control with Deep Reinforcement Learning** (Lillicrap et al., 2016) | Introduces concepts for reinforcement learning in continuous action spaces, crucial for robotics and autonomous control. |
 | **Understanding Domain Randomization for Sim-to-Real Transfer** (Chen et al., 2021) | Explores how randomizing simulation parameters helps RL-trained models generalize better to real-world robotics. |
-| **Episodic Multi-agent RL with Curiosity-driven Exploration** (Zheng et al., 2021) | Investigates the concept of curisosity driven RL in dynamic environments. |
 
 ## Sensors and actuators
 

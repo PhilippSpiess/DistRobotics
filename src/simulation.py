@@ -330,8 +330,6 @@ class SimulationEnv:
                 print("reward_walking ", reward_walking)
                 print("penalty_ankles ", penalty_ankles)
                 print("penalty_floor ", penalty_floor)
-        elif VIDEO_RECORDING:
-            video_writer.release()
 
         return reward, done
 

@@ -6,7 +6,7 @@ LEARNING_RATE = 0.00001
 TRAINING_BATCH = 50000
 MINI_BATCH_SIZE = 64
 NUM_WORKERS = 64
-ENTROPY_BONUS = 0.01
+ENTROPY_BONUS = 0.001
 
 TASK = "standing"            # standing standing_up walking jumping_mimic standing_robust
 ROBOT_TYPE = "legs"          # legs half full

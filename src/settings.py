@@ -9,12 +9,11 @@ TASKS = ["standing", "standing_up", "walking", "jumping_mimic", "walking_low_ene
 MIMICKING_TASKS = ["jumping_mimic", "walking_mimic", "squat_mimic"]
 
 NUM_BOTS = 64
-FORCE_MULTIPLIER = 1
 FRICTION = 2
 PARALLEL_SIM = False
-SIMULATION_FREQUENCY = 30      # (8 steps at a time - Pybullet default frequency is 240)
+SIMULATION_FREQUENCY = 120      # (8 steps at a time for 30Hz - 2 steps at a time for 120Hz)
 BLOCKING = False
-CONTROL = "velocity"           # "torque" , "position", "velocity"
+CONTROL = "torque"           # "torque" , "position", "velocity"
 
 MAX_VELOCITY = 1.6             # All velocities are between 0 and 1.6 - 16RPM is equivalent to 1.6 rad/s
 MAX_RPM = 16
@@ -60,6 +59,8 @@ ROBOT_CONFIGS = {
     ROBOT_TYPE_LEGS: {"action_size": 8, "state_size": (48,)},
     ROBOT_TYPE_HALF: {"action_size": 18, "state_size": (78,)},
 }
+
+FORCE_MULTIPLIER = 1
 
 #########            FIXED PARAMETERS           ##########
 

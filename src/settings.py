@@ -11,11 +11,11 @@ MIMICKING_TASKS = ["jumping_mimic", "walking_mimic", "squat_mimic"]
 NUM_BOTS = 64
 FRICTION = 2
 PARALLEL_SIM = False
-SIMULATION_FREQUENCY = 120      # (8 steps at a time for 30Hz - 2 steps at a time for 120Hz)
+SIMULATION_FREQUENCY = 120       # (8 steps at a time for 30Hz - 2 steps at a time for 120Hz)
 BLOCKING = False
-CONTROL = "torque"           # "torque" , "position", "velocity"
+CONTROL = "torque"              # "torque" , "position", "velocity"
 
-MAX_VELOCITY = 1.6             # All velocities are between 0 and 1.6 - 16RPM is equivalent to 1.6 rad/s
+MAX_VELOCITY = 1.6              # All velocities are between 0 and 1.6 - 16RPM is equivalent to 1.6 rad/s
 MAX_RPM = 16
 
 # Domain randomization
@@ -31,19 +31,15 @@ SMOOTH_FACTOR = 500
 MIMIC_CONSTANTS = {
     "ORIENTATION_WEIGHT": 0.65,
     "ORIENTATION_EXPONENT": -2,
-    "ORIENTATION_SCALING": 5,
 
     "ANGLE_VELOCITY_WEIGHT": 0.1,
     "ANGLE_VELOCITY_EXPONENT": -0.1,
-    "ANGLE_VELOCITY_SCALING": 0,  # in the paper as 0.1
 
     "END_EFFECTOR_WEIGHT": 0.15,
-    "END_EFFECTOR_EXPONENT": -2,
-    "END_EFFECTOR_SCALING": 0,  # in the paper as 40
+    "END_EFFECTOR_EXPONENT": -40,
 
     "CENTER_MASS_WEIGHT": 0.15,
-    "CENTER_MASS_EXPONENT": -2,
-    "CENTER_MASS_SCALING": 0,  # in the paper as 10
+    "CENTER_MASS_EXPONENT": -10,
 }
 
 WEIGHT_REWARD = 0.3

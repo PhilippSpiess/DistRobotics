@@ -390,25 +390,21 @@ class SimulationEnv:
         orientation_penalty_res = (
                 MIMIC_CONSTANTS["ORIENTATION_WEIGHT"]
                 * np.exp(MIMIC_CONSTANTS["ORIENTATION_EXPONENT"] * np.linalg.norm(orientation_penalty))
-                * MIMIC_CONSTANTS["ORIENTATION_SCALING"]
         )
 
         angle_velocity_penalty_res = (
                 MIMIC_CONSTANTS["ANGLE_VELOCITY_WEIGHT"]
                 * np.exp(MIMIC_CONSTANTS["ANGLE_VELOCITY_EXPONENT"] * np.linalg.norm(angle_velocity_penalty))
-                * MIMIC_CONSTANTS["ANGLE_VELOCITY_SCALING"]
         )
 
         end_effector_penalty_res = (
                 MIMIC_CONSTANTS["END_EFFECTOR_WEIGHT"]
                 * np.exp(MIMIC_CONSTANTS["END_EFFECTOR_EXPONENT"] * np.linalg.norm(end_effector_penalty))
-                * MIMIC_CONSTANTS["END_EFFECTOR_SCALING"]
         )
 
         center_mass_penalty_res = (
                 MIMIC_CONSTANTS["CENTER_MASS_WEIGHT"]
                 * np.exp(MIMIC_CONSTANTS["CENTER_MASS_EXPONENT"] * np.linalg.norm(center_mass_penalty))
-                * MIMIC_CONSTANTS["CENTER_MASS_SCALING"]
         )
 
         if self.PRINT_REWARD:

@@ -11,7 +11,7 @@ MIMICKING_TASKS = ["jumping_mimic", "walking_mimic", "squat_mimic"]
 NUM_BOTS = 64
 FRICTION = 2
 PARALLEL_SIM = False
-SIMULATION_FREQUENCY = 120       # (8 steps at a time for 30Hz - 2 steps at a time for 120Hz)
+SIMULATION_FREQUENCY = 30       # 30Hz for velocity - 120 Hz for torque
 BLOCKING = False
 CONTROL = "torque"              # "torque" , "position", "velocity"
 
@@ -29,16 +29,16 @@ ENERGY_FACTOR = 500
 SMOOTH_FACTOR = 500
 
 MIMIC_CONSTANTS = {
-    "ORIENTATION_WEIGHT": 0.65,
+    "ORIENTATION_WEIGHT": 0.65 * 5,
     "ORIENTATION_EXPONENT": -2,
 
-    "ANGLE_VELOCITY_WEIGHT": 0.1,
+    "ANGLE_VELOCITY_WEIGHT": 0.15 * 0,
     "ANGLE_VELOCITY_EXPONENT": -0.1,
 
-    "END_EFFECTOR_WEIGHT": 0.15,
+    "END_EFFECTOR_WEIGHT": 0.15 * 0,
     "END_EFFECTOR_EXPONENT": -40,
 
-    "CENTER_MASS_WEIGHT": 0.15,
+    "CENTER_MASS_WEIGHT": 0.15 * 0,
     "CENTER_MASS_EXPONENT": -10,
 }
 

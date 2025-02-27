@@ -1,11 +1,13 @@
 # Dist Robotics
 
-Traditional methods to train robots require powerful infrastructure and extremely high similarity between the simulated and real environments.
+Traditional methods to train robots require powerful infrastructure and extremely high similarity between the simulated and real environments, a digital twin, where a control model is learnt and then transfered to the real robot.
 
-Creating the digital twin of the robot can be very time consuming. 
-The goal here is to settle for a low level of digital ressemblance but use technics like domain randomization to allow the transfer the policy and evaluate the impact of fine-tuning in the real environment.
+But creating a precise digital twin be both tricky and very time consuming. 
 
-Through reinforcement learning from human feedback (RLHF), the robot should continuously refine its behavior and build intelligence through through teaching (the robot will mimic individuals).
+This projects here settles for a low level of digital resemblance but uses technics like domain randomization to allow the transfer the policy.
+The goal here is also to evaluate the impact of fine-tuning (applying reinforcement learning in the real environment) and see how fast a robot adapt to the real world.
+
+Another aspect of this project is to build intelligence through teaching (the robot will mimic individuals).
 
 <strong>Challenge:</strong> Building a humanoid robot from scratch for less than <strong>1000 CHF</strong> within <strong>12 months</strong>. (Currently at month 7)
 
@@ -14,19 +16,16 @@ Through reinforcement learning from human feedback (RLHF), the robot should cont
 ## Infra and Tools
 
 - Python 3.10.4
-- cuda-toolkit-12-4
-- nvidia-driver-535
-- https://www.liberiangeek.net/2024/04/install-cuda-on-ubuntu-24-04/ (or see install_cuda.md)
-
+- cuda-toolkit-12-4, nvidia-driver-535
 - GPU Nvidia RTX 4090: simulations & parameter tuning
-- Raspberry PIs 5: compute engine of the robot
+- Raspberry PIs 5: robot compute engine
 - FreeCad 0.21.2: Parts design
-- Prusa & Ender 3 V3 (Creality): 3D print Plasic parts
+- Prusa & Ender 3 V3 (Creality): 3D print robot parts
 - PyBullet (stable release 3.2.4) - 2022: Physics simulation engine
 
 ## Models
 
-#### Learning (custom built using Tensorflow)
+#### Learning (custom built using TensorFlow)
 
 - A Feedforward critic model
 - A Feedforward actor Model
@@ -38,32 +37,25 @@ Through reinforcement learning from human feedback (RLHF), the robot should cont
 
 - Faster R-CNN, a well-known object detection framework, combined with Inception-ResNet v2 - 2019
 - Pre-trained on the Open Images V4 dataset - 600 classes - XYZ box coordinates
-- Stored locally: efficient_openimages
 - Download the model: https://tfhub.dev/google/faster_rcnn/openimages_v4/inception_resnet_v2/1?tf-hub-format=compressed
 - Intel Midas 2 - For depth estimation: https://tfhub.dev/intel/midas/v2/2
 - Get the model: https://www.kaggle.com/models/intel/midas/tensorFlow1/v2/2?tfhub-redirect=true
-- Take a picture on the PI for the analysis:
-
-```
-libcamera-still -t 0 --timelapse 1000 -n -o "image_%04d.jpg"
-```
 
 #### Pose estimation from videos
 
-- Google mediapipe solution though the mediapipe library installed and accessible in venv
-( uses a combination of CNNs ) - 2020
+- Google mediapipe solution though the mediapipe library ( uses a combination of CNNs ) - 2020
 
 #### Speech recognition and audio processing
 
 - TODO
 
-#### Sentences to tasks and dialogues
+#### Sentences to tasks 
 
 - LLM - TODO
 
 #### Tasks verification
 
-- Voting mechanism to evaluate tasks - TODO
+- Voting mechanism - TODO
 
 ## Methods from the following papers
 
@@ -77,12 +69,14 @@ libcamera-still -t 0 --timelapse 1000 -n -o "image_%04d.jpg"
 
 ## Sensors and actuators
 
-- Motor 5840-3650                              # Control
+```
+- DC Motor 5840-3650                           # Control
 - Hall effect encoders                         # Joint angles
 - Gyroscope and accelerometer : mpu6050        # Equillibrium
 - PiCamera                                     # Vision
 - Microphone: Mini USB Microphone Audio        # Receive audio commands
 - Speakers: Max98357 I2S 3W Class D Amplifier  # Respond to audio commands
+```
 
 ## Using this code
 
@@ -107,7 +101,7 @@ Replace one of the placeholder value "" with the new task. (To avoid changing th
 
 Define rewards for each step (e.g +1 if closer to the goal and -50 if the robot fell)
 
-### 4. (optional) - use a video of a subject performing the task and add it to TASKS_MIMIC in **settings.py**
+### 4. (Optional) - Use a video of a subject performing the task and add it to TASKS_MIMIC in **settings.py**
 
 - First store a video (e.g TASK_NAME_mimic.mp4) in /src/mimic/
 - Second: add TASK_NAME to the MIMICKING_TASKS in settings.py
@@ -129,27 +123,16 @@ elif self.task == "walking_low_energy" or self.task =="walking_mimic" or self.ta
 
 ### 6. Learn
 
-Ensure cuda path is defined:
+Train the weights (and specify certain parameters), e.g:
 
 ```
-export CUDA_DIR=/usr/local/cuda-12.4
-export XLA_FLAGS=--xla_gpu_cuda_data_dir=$CUDA_DIR
-
-echo 'export CUDA_DIR=/usr/local/cuda-12.4' >> ~/.bashrc
-echo 'export XLA_FLAGS=--xla_gpu_cuda_data_dir=$CUDA_DIR' >> ~/.bashrc
-source ~/.bashrc
-```
-
-Train the weights (and specify custom parameters), e.g:
-
-```
-python learning.py --TASK walking --LEARNING_RATE 0.00001 --ROBOT_TYPE full
+python learning.py --TASK walking --LEARNING_RATE 0.0001 --ROBOT_TYPE full
 ```
 
 Then test:
 
 ```
-python learning.py --TESTING True --TASK walking --LEARNING_RATE 0.00001 --ROBOT_TYPE full
+python learning.py --TESTING True --TASK walking --LEARNING_RATE 0.0001 --ROBOT_TYPE full
 ```
 
 Reinforce the models by adding perturbations (to make it transferable to the real robot)
@@ -164,29 +147,33 @@ Save the changes to the code and the newly generate weights:
 git push origin main
 ```
 
-### 7. Upload the weights in the robot (the raspberry pi)
-
-```
-git pull 
-```
-
-### 8. Try to control the robot with the new weights
+### 7. Control the robot with the new weights:
 
 - Connect the robot to the 24V power supply.
 - Then run the following (it should automatically calibrate itself)
 
 ```
+git pull               # Updates the code and the weights
 python control.py      # Easiest is to connect remotely with VStudio
 ```
 
-### 9. Reinforce the model weights using real robot data (Human Feedback)
+### 8. Reinforce the model weights using real robot data (Human Feedback)
 
-TODO: Sending arrays of state-action-rewards to a server for centralized training
+TODO: Sending arrays of state-action-rewards tuples to a dedicated server for centralized training
 
-### 10. Full size robot with vision
+### 9. Use vision
 
-TODO: running vision_depth.py to constantly save and analyse pictures of the environment 
-to enhance the state of the robot.
+Setup 2 background processes:
+
+- Take picture on a regular basis
+```
+libcamera-still -t 0 --timelapse 1000 -n -o "image_%04d.jpg"
+```
+- Analyse the content of the pictures as often as possible
+```
+python vision_depth.py
+```
+This will create a additional data that the robot can use to increase its state with vision features.
 
 ## Pictures and Videos
 

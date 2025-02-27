@@ -6,7 +6,7 @@ LEARNING_RATE = 0.00001
 TRAINING_BATCH = 50000
 MINI_BATCH_SIZE = 64
 NUM_WORKERS = 64
-ENTROPY_BONUS = 0.01
+ENTROPY_BONUS = 0.01         # 0.01 better for velocity control at 30Hz - 0.001 at 120 Hz
 
 TASK = "standing"            # standing standing_up walking jumping_mimic standing_robust
 ROBOT_TYPE = "legs"          # legs half full
@@ -25,10 +25,10 @@ LEARNING_DECAY = 1.0
 LOSS_CLIPPING = 0.2
 GAMMA = 0.99
 EPOCHS = 10
-GOAL = 1000
 LAMDA = 0.9
 DEFAULT_TRAINING_BATCH = 50000
 
+GOAL = 1000
 if "standing" in TASK:
     GOAL = 80
 elif "walking" in TASK:

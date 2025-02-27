@@ -287,9 +287,9 @@ class SimulationEnv:
         reward_stable = upright ** 2 + 50 * (upright ** 2 - previous_upright ** 2)
 
         if "walking" in self.task:
-            reward_walking += 4*min(1, SIMULATION_FREQUENCY * distance_forward_left_foot) if distance_forward_right_foot <= 1 / SIMULATION_FREQUENCY / 5 else 0
-            reward_walking += 4*min(1, SIMULATION_FREQUENCY * distance_forward_right_foot) if distance_forward_left_foot <= 1 / SIMULATION_FREQUENCY / 5 else 0
-            reward_walking += 4*min(1, SIMULATION_FREQUENCY * distance_forward_root)
+            reward_walking += SIMULATION_FREQUENCY * distance_forward_left_foot if distance_forward_right_foot <= 1 / SIMULATION_FREQUENCY / 5 else 0  # min(1, )
+            reward_walking += SIMULATION_FREQUENCY * distance_forward_right_foot if distance_forward_left_foot <= 1 / SIMULATION_FREQUENCY / 5 else 0   # min(1, )
+            reward_walking += SIMULATION_FREQUENCY * distance_forward_root   # min(1, )
 
         if "low_energy" in self.task:
             penalty_energy -= energy / ENERGY_FACTOR
@@ -449,8 +449,8 @@ class SimulationEnv:
         else:
             start_frame, end_frame = 0, -1
 
-        # return start_frame, end_frame
-        return 0, len(self.mimic_frames)-2                                       # NO RSI FOR NOW!
+        return start_frame, end_frame
+        # return 0, len(self.mimic_frames)-2 # NO RSI FOR NOW!
 
     def get_links_joints_data(self, robot):
 
@@ -654,8 +654,8 @@ class SimulationEnv:
              self.p.stepSimulation()
              time.sleep(self.sleep_time)
 
-        if self.robot_type == "full":
-            vision_object, x, y, z = self.get_first_person_view(self.robot_id)
+        #if self.robot_type == "full":
+        #    vision_object, x, y, z = self.get_first_person_view(self.robot_id)
 
         new_upright, new_joints_data, new_links_data = self.get_links_joints_data(self.robot_id)
 

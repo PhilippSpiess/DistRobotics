@@ -16,8 +16,8 @@ TEXTURE_SIZE = 256
 NUM_ROWS = 128
 NUM_COLUMNS = 128
 GRAVITY = -9.81
-NUM_ROW_BLOCK = 5  # Define this appropriately
-FRICTION = 1.0  # Define this appropriately
+NUM_ROW_BLOCK = 5
+FRICTION = 1.0
 
 # Decorator to time functions
 def timeit(log=True):

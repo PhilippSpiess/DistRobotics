@@ -529,9 +529,6 @@ if __name__ == "__main__":
     elif PARALLEL:
         agent = PPOAgent(env_name, render=False, task=TASK, parallel=PARALLEL, robot_type=ROBOT_TYPE)
         agent.run_parallel(num_workers = NUM_WORKERS)
-    elif TRAINING_BATCH==0:
-        agent = PPOAgent(env_name, render=False, task=TASK, robot_type=ROBOT_TYPE)
-        agent.run_full()
     else:
         agent = PPOAgent(env_name, render=False, task=TASK, robot_type=ROBOT_TYPE)
         agent.run_batch()

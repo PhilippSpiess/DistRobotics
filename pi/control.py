@@ -253,25 +253,6 @@ if False:
     time.sleep(0.5)
 
 
-def encoder_callback(num):
-    global pulse_counts
-    if orientation_motors[num] * current_directions[num] == -1:
-        pulse_counts[num] -= 1
-    else:
-        pulse_counts[num] += 1
-
-
-def read_speeds(interval):
-    global previous_pulses
-    pulses_ends = pulse_counts.copy()
-    pulses = np.array(pulses_ends) - np.array(previous_pulses)
-    previous_pulses = pulses_ends
-    speed_rps = pulses / pulses_per_revolution / interval  # Revolutions per second
-    speed_rpms = speed_rps * 60  # Convert to RPM
-    rpms = speed_rpms / 500  # RATIO OF MOTOR
-    return np.array(rpms) * orientation_motors
-
-
 def map_duty_cycle_to_motor(value):
     if value > 0:
         if value < 50:
@@ -380,7 +361,7 @@ try:
                       angles_encoder]
     angles = [2 * math.pi - angle_radian if angle_radian < -math.pi else angle_radian for angle_radian in
               angles_encoder]
-    # pulse_counts = np.full(NUM_MOTORS, 0) # Reset here
+
     if angles[2] > 0.05:
         DIRECTION_TEST = -1
     else:
@@ -398,14 +379,13 @@ try:
 
         interval = time.time() - current_time
         current_time = time.time()
-        # current_rpms = read_speeds(interval)
+
         current_speeds = (np.array(angles) - np.array(previous_angles)) / interval
 
         print("Step time: ", np.round(interval, 4))
         if PRINTING:
             print("Angles; ", np.round(angles, 2))
 
-        # state_angle_normalized = [ (pulse_count % PULSES_PER_TURN) / PULSES_PER_TURN for pulse_count in pulse_counts ]
         angles_normalized = 2 * ((angles - np.array(MIN_ANGLES)) / (np.array(MAX_ANGLES) - np.array(MIN_ANGLES))) - 1
         state_velocity_normalized = np.array(current_speeds) / MAX_SPEED
         set_speed_normalized = np.array(goal_speeds) / MAX_SPEED

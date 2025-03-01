@@ -13,7 +13,7 @@ FRICTION = 2
 PARALLEL_SIM = False
 SIMULATION_FREQUENCY = 30       # 30Hz for velocity - 120 Hz for torque
 BLOCKING = False
-CONTROL = "torque"              # "torque" , "position", "velocity"
+CONTROL = "velocity"              # "torque" , "position", "velocity"
 
 MAX_VELOCITY = 1.6              # All velocities are between 0 and 1.6 - 16RPM is equivalent to 1.6 rad/s
 MAX_RPM = 16

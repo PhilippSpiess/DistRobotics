@@ -14,6 +14,7 @@ import argparse
 
 from mimic import load_mimic
 from settings import *
+from parameters import *
 from helpers import timeit, create_random_terrain
 
 random.seed(42)
@@ -449,8 +450,8 @@ class SimulationEnv:
         else:
             start_frame, end_frame = 0, -1
 
-        return start_frame, end_frame
-        # return 0, len(self.mimic_frames)-2 # NO RSI FOR NOW!
+        # return start_frame, end_frame
+        return 0, len(self.mimic_frames)-2 # NO RSI FOR NOW!
 
     def get_links_joints_data(self, robot):
 
@@ -515,11 +516,11 @@ class SimulationEnv:
         if self.is_mimicking:
             init_target_frames = self.mimic_frames[int(frame_counter)]
             start_pos_robot = np.array(self.start_pos) + np.array([init_target_frames['head']['coordinates']["x"] , init_target_frames['head']['coordinates']["y"], 0]) # Translate on the xy plane
-            init_orientation_x, init_orientation_y, init_orientation_z = init_target_frames["orientation"]["roll"], init_target_frames["orientation"]["pitch"], init_target_frames["orientation"]["yaw"]
+            init_orientation_x, init_orientation_y, init_orientation_z = init_target_frames["orientation"]["roll"], init_target_frames["orientation"]["pitch"]+ORIENTATION_OFFSET_PITCH, init_target_frames["orientation"]["yaw"]
         else:
             init_target_frames = None
             start_pos_robot = self.start_pos
-            init_orientation_x, init_orientation_y, init_orientation_z = 0, 0 ,0
+            init_orientation_x, init_orientation_y, init_orientation_z = 0, ORIENTATION_OFFSET_PITCH ,0
         perturbation = np.random.uniform(-0.01, 0.01, size=3)
         self.upright_orientation =self.p.getQuaternionFromEuler([1.57+perturbation[0]+init_orientation_x, perturbation[1]+init_orientation_y, perturbation[2]+init_orientation_z])
         if robot is None:

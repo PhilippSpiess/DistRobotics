@@ -58,6 +58,8 @@ ROBOT_CONFIGS = {
 
 FORCE_MULTIPLIER = 1
 
+ORIENTATION_OFFSET_PITCH = -0.1
+
 #########            FIXED PARAMETERS           ##########
 
 STEP_FREQUENCY = 240

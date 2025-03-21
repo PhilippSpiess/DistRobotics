@@ -106,12 +106,11 @@ Define rewards for each step (e.g +1 if closer to the goal and -50 if the robot 
 
 ### 4. (Optional) - Use a video of a subject performing the task and add it to TASKS_MIMIC in **settings.py**
 
-- First store a video (e.g TASK_NAME_mimic.mp4) in /src/mimic/
-- Second: add TASK_NAME to the MIMICKING_TASKS in settings.py
+- Store a video (e.g TASK_NAME.mp4) in /src/mimic/
 - Create the frames (e.g):
 ```
 # For example
-python mimic.py --TASK squat_mimic
+python mimic.py --TASK squat
 ```
 
 ### 5. Define the pretraining level in **learning.py**
@@ -120,8 +119,8 @@ For example walking uses the standing weights, so if the standing weights have a
 one can specify in learning.py that walking should use the weights of standing. For instance, one could add:
 
 ```
-elif self.task == "walking_low_energy" or self.task =="walking_mimic" or self.task == "walking_robust":
-    self.load_pretrained("walking")
+if self.task == "walking":
+    self.load_pretrained("standing")
 ```
 
 ### 6. Learn
@@ -141,7 +140,13 @@ python learning.py --TESTING True --TASK walking --LEARNING_RATE 0.0001 --ROBOT_
 Reinforce the models by adding perturbations (to make it transferable to the real robot)
 
 ```
-python learning.py --TASK walking_robust --LEARNING_RATE 0.00001 --ROBOT_TYPE full
+python learning.py --ROBUST True
+```
+
+If available for the task, use pose estimations to improve learning  
+
+```
+python learning.py --MIMIC True
 ```
 
 Save the changes to the code and the newly generate weights:
@@ -153,7 +158,7 @@ git push origin main
 ### 7. Control the robot with the new weights:
 
 - Connect the robot to the 24V power supply.
-- Then run the following (it should automatically calibrate itself)
+- Then run the following (The robot should first automatically calibrate itself)
 
 ```
 git pull               # Updates the code and the weights

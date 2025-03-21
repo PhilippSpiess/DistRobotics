@@ -123,7 +123,7 @@ class CuriosityModel:
 
 class PPOAgent:
 
-    def __init__(self, env_name, render=False, task="standing", parallel=False, robot_type="full"):
+    def __init__(self, env_name, render=False, task="standing", parallel=False, robot_type="full", mimic=False, robust=False, low_energy=False):
 
         if REAL:
             if robot_type in ROBOT_CONFIGS:
@@ -133,14 +133,14 @@ class PPOAgent:
                 raise ValueError(f"Unknown ROBOT_TYPE: {ROBOT_TYPE}")
         else:
             if parallel and not TESTING:
-                self.env = SimulationParallelEnv(render, robot_type, task)
+                self.env = SimulationParallelEnv(render, robot_type, task, mimic, robust, low_energy)
                 render=False
-                self.test_env = SimulationEnv(render, robot_type, task)
+                self.test_env = SimulationEnv(render, robot_type, task, mimic, robust, low_energy)
             elif TESTING:
-                self.env = SimulationEnv(True, robot_type, task, print_reward=True)
+                self.env = SimulationEnv(True, robot_type, task, mimic, robust, low_energy, print_reward=True)
                 self.test_env = self.env
             else:
-                self.env = SimulationEnv(render, robot_type, task)
+                self.env = SimulationEnv(render, robot_type, task, mimic, robust, low_energy)
                 self.test_env = self.env
             self.action_size = self.env.dim_action
             self.state_size = (self.env.dim_state,)
@@ -176,10 +176,10 @@ class PPOAgent:
 
         if REAL:
             self.load_pretrained(self.task)
-        if self.task == "walking":
+        if robust or low_energy:
+            self.load_pretrained(self.task)
+        elif self.task == "walking":
             self.load_pretrained("standing")
-        elif self.task == "walking_low_energy" or self.task =="walking_mimic" or self.task == "walking_robust":
-            self.load_pretrained("walking")
 
     def act(self, state):
 
@@ -282,14 +282,15 @@ class PPOAgent:
         self.average_.append(sum(self.scores_[-50:]) / len(self.scores_[-50:]))
 
         if episode % 500 == 0:
-            plt.plot(self.episodes_, self.scores_, 'blue')
-            plt.plot(self.episodes_, self.average_, 'red')
+            plt.plot(self.episodes_, self.average_, 'blue')
             plt.plot(self.episodes_, self.scores_deterministic_, 'black')
-            plt.title(FOLDER_NAME.replace("_"," ") + " PPO training cycle", fontsize=10)
+            plt.title(FOLDER_NAME.split("/")[-1].replace("_"," ") + " - PPO training cycle", fontsize=14)
             plt.ylabel('Score', fontsize=18)
             plt.xlabel('Episodes', fontsize=18)
+            plt.xticks(fontsize=14)
+            plt.yticks(fontsize=14)
             plt.grid(True)
-            plt.legend(['Exploring', 'Exploring_avg', 'Deterministic'])
+            plt.legend(['Exploring_avg', 'Deterministic'])
             plt.savefig(FOLDER_NAME+"/"+self.env_name + ".png")
 
         if episode==MAX_EPISODES:
@@ -476,6 +477,9 @@ if __name__ == "__main__":
     parser.add_argument("--TASK", type=str, default=TASK)
     parser.add_argument("--ROBOT_TYPE", type=str, default=ROBOT_TYPE)
     parser.add_argument("--NUM_WORKERS", type=int, default=NUM_WORKERS)
+    parser.add_argument("--ROBUST", type=str, default=ROBUST)
+    parser.add_argument("--MIMIC", type=str, default=MIMIC)
+    parser.add_argument("--LOW_ENERGY", type=str, default=LOW_ENERGY)
     args = parser.parse_args()
     LEARNING_RATE = args.LEARNING_RATE
     LAYER_SIZE = args.LAYER_SIZE
@@ -494,6 +498,9 @@ if __name__ == "__main__":
     TESTING = str(args.TESTING) == "True"
     TASK = args.TASK
     ROBOT_TYPE = args.ROBOT_TYPE
+    ROBUST = str(args.ROBUST) == "True"
+    MIMIC = str(args.MIMIC) == "True"
+    LOW_ENERGY = str(args.LOW_ENERGY) == "True"
 
     if REAL or REAL_TRAINING:
         env_name = 'Real'+"_"+ROBOT_TYPE+"_"+TASK
@@ -507,13 +514,13 @@ if __name__ == "__main__":
 
     create_folder_if_not_exists(env_name)
     if REAL_TRAINING:
-        agent = PPOAgent(env_name, render=False, task=TASK, robot_type=ROBOT_TYPE)
+        agent = PPOAgent(env_name, render=False, task=TASK, robot_type=ROBOT_TYPE, mimic=MIMIC, robust=ROBUST, low_energy=LOW_ENERGY)
         while True:
             # TODO: get the data from the raspberry pi
             # agent.run_real(states, next_states, actions, rewards, predictions, dones)
             pass
     elif REAL:
-        agent = PPOAgent(env_name, render=False, task=TASK, robot_type=ROBOT_TYPE)
+        agent = PPOAgent(env_name, render=False, task=TASK, robot_type=ROBOT_TYPE, mimic=MIMIC, robust=ROBUST, low_energy=LOW_ENERGY)
         state = np.random.uniform(-1, 1, size=78)
         start_time = time.time()
         action, prediction = agent.act(state)
@@ -523,12 +530,12 @@ if __name__ == "__main__":
         print(action)
         print(prediction)
     elif TESTING:
-        agent = PPOAgent(env_name, render=True, task=TASK, robot_type=ROBOT_TYPE)
+        agent = PPOAgent(env_name, render=True, task=TASK, robot_type=ROBOT_TYPE, mimic=MIMIC, robust=ROBUST, low_energy=LOW_ENERGY)
         average_score = agent.test()
         agent.env.close()
     elif PARALLEL:
-        agent = PPOAgent(env_name, render=False, task=TASK, parallel=PARALLEL, robot_type=ROBOT_TYPE)
+        agent = PPOAgent(env_name, render=False, task=TASK, parallel=PARALLEL, robot_type=ROBOT_TYPE, mimic=MIMIC, robust=ROBUST, low_energy=LOW_ENERGY)
         agent.run_parallel(num_workers = NUM_WORKERS)
     else:
-        agent = PPOAgent(env_name, render=False, task=TASK, robot_type=ROBOT_TYPE)
+        agent = PPOAgent(env_name, render=False, task=TASK, robot_type=ROBOT_TYPE, mimic=MIMIC, robust=ROBUST, low_energy=LOW_ENERGY)
         agent.run_batch()

@@ -8,10 +8,13 @@ MINI_BATCH_SIZE = 64
 NUM_WORKERS = 64
 ENTROPY_BONUS = 0.01         # 0.01 better for velocity control at 30Hz - 0.001 at 120 Hz
 
-TASK = "standing"            # standing standing_up walking jumping_mimic standing_robust
-ROBOT_TYPE = "legs"          # legs half full
+TASK = "squat"            # standing standing_up walking
+ROBOT_TYPE = "legs"               # legs half full
 TESTING = False
 MAX_EPISODES = 500000
+ROBUST = False
+MIMIC = True
+LOW_ENERGY = False
 
 REAL = False
 REAL_TRAINING = False
@@ -28,8 +31,10 @@ EPOCHS = 10
 LAMDA = 0.9
 DEFAULT_TRAINING_BATCH = 50000
 
-GOAL = 1000
+GOAL = 100
 if "standing" in TASK:
     GOAL = 80
+elif "jumping_mimic" in TASK:
+    GOAL = 120
 elif "walking" in TASK:
     GOAL = 300

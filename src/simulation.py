@@ -22,9 +22,9 @@ np.random.seed(42)
 
 class SimulationEnv:
 
-    def __init__(self, render=False, robot_type="half", task="standing", print_reward=False):
+    def __init__(self, render=False, robot_type=ROBOT_TYPE, task=TASK, mimic=False, robust=False, low_energy=False, print_reward=False):
         # robot: full, half, legs
-        # task: standing, walking, walking_low_energy, etc.
+        # task: standing, walking, squat, etc.
 
         self.PRINT_REWARD = print_reward
         self.state = None
@@ -44,15 +44,14 @@ class SimulationEnv:
         self.start_frame = None
         self.end_frame = None
         self.mimic_frames = [None]
-        self.is_mimicking = self.task in MIMICKING_TASKS
+        self.is_mimicking = mimic
+        self.low_energy = low_energy
         if self.is_mimicking:
             self.mimic_frames = load_mimic(self.task)["frames"]
 
         self.NOISE = NOISE
         self.NOISE_ANGLE = NOISE_ANGLE_STANDING_UP if self.task == "standing_up" else 0.1
-        self.robust = False
-        if "robust" in task:
-            self.robust = True
+        self.robust = robust
 
         if self.robot_type == "half":
             self.LINKS = LINKS_HALF
@@ -160,7 +159,7 @@ class SimulationEnv:
     def initialize_angles(self, robot, init_target_frames=None, start_pos_robot=None):
 
         # Set specific angles with random perturbation for each joint
-        if self.task not in MIMICKING_TASKS:
+        if MIMIC:
 
             base_angles = [0] * len(self.JOINTS)
             for joint_index in range(len(self.JOINTS)):
@@ -268,13 +267,6 @@ class SimulationEnv:
         done = 0
         reward = 0
 
-        distance_forward_left_foot = links_data["left_foot"]["x"] - previous_links_data["left_foot"]["x"]
-        distance_forward_right_foot = links_data["right_foot"]["x"] - previous_links_data["right_foot"]["x"]
-        distance_forward_root = links_data["root"]["x"] - previous_links_data["root"]["x"]
-
-        energy = np.sum([np.abs(joints_data[j]["torque"]) for j in self.JOINTS])
-        non_smoothness = np.sum([np.abs(previous_joints_data[j]["torque"] - joints_data[j]["torque"]) for j in self.JOINTS])
-
         penalty_not_smooth = 0
         penalty_energy = 0
         penalty_fall = -50
@@ -288,11 +280,21 @@ class SimulationEnv:
         reward_stable = upright ** 2 + 50 * (upright ** 2 - previous_upright ** 2)
 
         if "walking" in self.task:
+
+            distance_forward_left_foot = links_data["left_foot"]["x"] - previous_links_data["left_foot"]["x"]
+            distance_forward_right_foot = links_data["right_foot"]["x"] - previous_links_data["right_foot"]["x"]
+            distance_forward_root = links_data["root"]["x"] - previous_links_data["root"]["x"]
+
             reward_walking += SIMULATION_FREQUENCY * distance_forward_left_foot if distance_forward_right_foot <= 1 / SIMULATION_FREQUENCY / 5 else 0  # min(1, )
             reward_walking += SIMULATION_FREQUENCY * distance_forward_right_foot if distance_forward_left_foot <= 1 / SIMULATION_FREQUENCY / 5 else 0   # min(1, )
             reward_walking += SIMULATION_FREQUENCY * distance_forward_root   # min(1, )
 
-        if "low_energy" in self.task:
+        if self.low_energy:
+
+            energy = np.sum([np.abs(joints_data[j]["torque"]) for j in self.JOINTS])
+            non_smoothness = np.sum(
+                [np.abs(previous_joints_data[j]["torque"] - joints_data[j]["torque"]) for j in self.JOINTS])
+
             penalty_energy -= energy / ENERGY_FACTOR
             penalty_not_smooth -= non_smoothness / SMOOTH_FACTOR
 
@@ -337,7 +339,7 @@ class SimulationEnv:
     def get_reward_mimic(self, frame_counter, end_frame, joints_data, links_data, offset_xy = [0,0]):
         # DeepMimic implementation
 
-        if self.task not in MIMICKING_TASKS:
+        if not self.is_mimicking:
             return 0
         if frame_counter >= end_frame:
             return None
@@ -417,30 +419,41 @@ class SimulationEnv:
 
         return orientation_penalty_res + angle_velocity_penalty_res + end_effector_penalty_res + center_mass_penalty_res
 
-    def get_state(self, robot, idx=None):
+    def get_state(self, idx=None):
+        
+        if idx is not None:  # Parallel case
+            joints_data = self.joints_data[idx]
+            links_data = self.links_data[idx]
+            action = self.action[idx]
+        else:                # Single robot case
+            joints_data = self.joints_data
+            links_data = self.links_data
+            action = self.action
 
-        action = self.action if idx is None else self.action[idx]
         next_state = []
-        for j in range(len(self.JOINTS)):
 
+        for j, joint_name in enumerate(self.JOINTS):
             state_noise = np.random.uniform(1 - self.NOISE, 1 + self.NOISE) if self.robust else 1
 
-            joint_info =self.p.getJointInfo(robot, j)
-            joint_name = joint_info[1].decode("utf-8")
-            joint_state = self.p.getJointState(robot, j)
-            position = 2 * ((joint_state[0] - self.MIN_POSITIONS[j]) / (self.MAX_POSITIONS[j] - self.MIN_POSITIONS[j])) - 1 #  ( joint_state[0] - self.MIN_POSITIONS[j] ) / (self.MAX_POSITIONS[j] - self.MIN_POSITIONS[j])     # normalised [0, 1]
-            velocity = joint_state[1]                                                                                   # radian/s [-1, 1]
-            joint_action = action[j] # joint_state[3] # torque + external force                                         # between [-1, 1]
+            joint_info = joints_data[joint_name]
+
+            position = 2 * ((joint_info["angle"] - self.MIN_POSITIONS[j]) /
+                            (self.MAX_POSITIONS[j] - self.MIN_POSITIONS[j])) - 1
+            velocity = joint_info["angle_velocity"]
+            joint_action = action[j]
+
             next_state += [position * state_noise, velocity * state_noise, joint_action * state_noise]
-            # The reaction force is not used : joint_state[2]
 
         state_noise = np.random.uniform(1 - self.NOISE, 1 + self.NOISE) if self.robust else 1
 
-        _,_,_, roll, pitch, yaw = self.get_robot_position_angle(robot)
-        next_state += [roll * state_noise, pitch * state_noise, yaw * state_noise] # yaw will be 0 for the real robot
-        next_state += self.task_state
+        root_info = links_data["root"]
+        roll, pitch, yaw = root_info["roll"], root_info["pitch"], root_info["yaw"]
+
+        next_state += [roll * state_noise, pitch * state_noise, yaw * state_noise]
+        next_state += self.task_state  # One-hot encoded task representation
 
         return next_state
+
 
     def set_target_frames(self):
 
@@ -451,7 +464,7 @@ class SimulationEnv:
             start_frame, end_frame = 0, -1
 
         # return start_frame, end_frame
-        return 0, len(self.mimic_frames)-2 # NO RSI FOR NOW!
+        return 0, len(self.mimic_frames)-2  # NO RSI FOR NOW!
 
     def get_links_joints_data(self, robot):
 
@@ -528,7 +541,7 @@ class SimulationEnv:
         else:
             self.p.removeBody(robot)
             robot =self.p.loadURDF(self.HUMANOID_FILE, start_pos_robot, self.upright_orientation, useFixedBase=False)
-            # self.p.resetBasePositionAndOrientation(robot, self.start_pos, self.upright_orientation) # this introduces a bounce
+            # self.p.resetBasePositionAndOrientation(robot, self.start_pos, self.upright_orientation)                   # this introduces a bounce
 
         self.initialize_angles(robot, init_target_frames, np.array([self.start_pos[0], self.start_pos[1], 0]))
 
@@ -554,7 +567,7 @@ class SimulationEnv:
 
         return robot, upright, joints_data, links_data
 
-    def apply_actions(self, robot, action_transformed, start_frame, frame_counter):
+    def apply_actions(self, robot, action_transformed):
 
         for j, action_value in enumerate(action_transformed):
             joint_info =self.p.getJointInfo(robot, j)
@@ -575,16 +588,16 @@ class SimulationEnv:
                 current_position = joint_state[0]
                 stall_torque = 25
                 self.p.setJointMotorControl2(robot, j, controlMode=self.p.POSITION_CONTROL,
-                                             targetPosition=current_position, # positionGain=0, velocityGain=0,
+                                             targetPosition=current_position,
                                              force=stall_torque)
             elif CONTROL == "torque":
                 self.p.setJointMotorControl2(bodyUniqueId=robot,
-                                        jointIndex=j, # positionGain=0, velocityGain=0,
+                                        jointIndex=j,
                                         controlMode=self.p.TORQUE_CONTROL,
                                         force=current_action_value)
             elif CONTROL == "position":
                 self.p.setJointMotorControl2(robot, j, controlMode=self.p.POSITION_CONTROL,
-                                             targetPosition=current_action_value, # positionGain=0, velocityGain=0, # To adjust
+                                             targetPosition=current_action_value,
                                              force=current_max_torque)
             elif CONTROL == "velocity":
                 self.p.setJointMotorControl2(robot, j, self.p.VELOCITY_CONTROL,
@@ -602,7 +615,7 @@ class SimulationEnv:
             self.robot_id, self.upright, self.joints_data, self.links_data = self.generate_robot(self.frame_counter)
         else:
             _ , self.upright, self.joints_data, self.links_data = self.generate_robot(self.frame_counter, self.robot_id)
-        self.state = self.get_state(self.robot_id)
+        self.state = self.get_state()
         self.state.append(self.frame_counter / len(self.mimic_frames))
         self.done = False
         self.reward = None
@@ -649,7 +662,7 @@ class SimulationEnv:
         current_action_transformed = self.transform_action(raw_action)
 
         for _ in range(int(STEP_FREQUENCY / SIMULATION_FREQUENCY)):
-             self.apply_actions(self.robot_id, current_action_transformed, self.start_frame, self.frame_counter)
+             self.apply_actions(self.robot_id, current_action_transformed)
              if self.robust:
                  self.apply_random_force(self.robot_id)
              self.p.stepSimulation()
@@ -660,7 +673,7 @@ class SimulationEnv:
 
         new_upright, new_joints_data, new_links_data = self.get_links_joints_data(self.robot_id)
 
-        self.state = self.get_state(self.robot_id)
+        self.state = self.get_state()
         self.state.append(self.frame_counter / len(self.mimic_frames))
 
         reward, self.done = self.get_reward(new_upright, new_joints_data, new_links_data, self.upright, self.joints_data, self.links_data)
@@ -684,9 +697,9 @@ class SimulationEnv:
 
 class SimulationParallelEnv(SimulationEnv):
 
-    def __init__(self, render=False, robot_type="full", task="standing"):
+    def __init__(self, render=False, robot_type=ROBOT_TYPE, task=TASK, mimic=False, robust=False, low_energy=False):
 
-        super().__init__(render=render, robot_type=robot_type, task=task)
+        super().__init__(render=render, robot_type=robot_type, task=task, mimic=mimic, robust=robust, low_energy=low_energy)
 
         self.state = []
         self.action = []
@@ -724,7 +737,7 @@ class SimulationParallelEnv(SimulationEnv):
             self.action_transformed.append(self.transform_action(action))
             self.reward.append(0)
             self.done.append(False)
-            state = self.get_state(self.robot_id[idx], idx)
+            state = self.get_state(idx)
             state.append( start_frame / len(self.mimic_frames))
             self.state.append(state)
             self.init_offset_xy.append(self.start_pos[:2])
@@ -738,7 +751,7 @@ class SimulationParallelEnv(SimulationEnv):
             self.action[idx] = action
             self.action_transformed[idx] = self.transform_action(action)
             self.done[idx] = False
-            state = self.get_state(self.robot_id[idx], idx)
+            state = self.get_state(idx)
             state.append(self.frame_counter[idx] / len(self.mimic_frames))
             self.state[idx] = state
 
@@ -750,7 +763,7 @@ class SimulationParallelEnv(SimulationEnv):
 
         for _ in range(int(STEP_FREQUENCY / SIMULATION_FREQUENCY)):
             for idx, current_action_transformed in enumerate(current_action_transformed_list):
-                self.apply_actions(self.robot_id[idx], current_action_transformed, self.start_frame[idx], self.frame_counter[idx])
+                self.apply_actions(self.robot_id[idx], current_action_transformed)
                 if self.robust:
                     self.apply_random_force(self.robot_id[idx])
             self.p.stepSimulation()
@@ -761,7 +774,7 @@ class SimulationParallelEnv(SimulationEnv):
 
             new_upright, new_joints_data, new_links_data = self.get_links_joints_data(robot_id)
 
-            self.state[idx] = self.get_state(robot_id, idx)
+            self.state[idx] = self.get_state(idx)
             self.state[idx].append(self.frame_counter[idx] / len(self.mimic_frames))
 
             reward, self.done[idx] = self.get_reward(new_upright, new_joints_data, new_links_data, self.upright[idx], self.joints_data[idx], self.links_data[idx])
@@ -792,8 +805,8 @@ class RandomAgent:
         self.dim_action = dim_action
 
     def act(self, state):
-        # random_array = np.random.uniform(-1, 1, size=self.dim_action) # array = [0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
-        random_array = np.full(self.dim_action, -1)
+        random_array = np.random.uniform(-1, 1, size=self.dim_action)  # array = [0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+        # random_array = np.full(self.dim_action, -1)
         return random_array
 
 

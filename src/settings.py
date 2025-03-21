@@ -5,10 +5,9 @@ import os
 import cv2
 
 # THE "" are placeholders so that new tasks can be added without changing the dimensions of the neural network
-TASKS = ["standing", "standing_up", "walking", "jumping_mimic", "walking_low_energy","walking_robust","walking_mimic","standing_robust","squat_mimic","","","","","","","","","","",""]
-MIMICKING_TASKS = ["jumping_mimic", "walking_mimic", "squat_mimic"]
+TASKS = ["standing", "standing_up", "walking", "jumping","squat","","","","","","","","","","","","","","",""]
 
-NUM_BOTS = 64
+NUM_BOTS = 256
 FRICTION = 2
 PARALLEL_SIM = False
 SIMULATION_FREQUENCY = 30       # 30Hz for velocity - 120 Hz for torque

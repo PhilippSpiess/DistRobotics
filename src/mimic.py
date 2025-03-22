@@ -9,7 +9,7 @@ import numpy as np
 import argparse
 import os
 
-from settings import JOINT_NAMES_POSE_ESTIMATES_EQUIVALENT_TO_SIMULATION
+from config_simulation import JOINT_NAMES_POSE_ESTIMATES_EQUIVALENT_TO_SIMULATION
 
 ROBOT_HEIGHT = 1.48  # Foot to Head - For mimicking properly, the demo must start with a straight position
 ROBOT_WIDTH = 0.4    # Shoulder to shoulder

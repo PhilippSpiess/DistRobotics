@@ -4,8 +4,8 @@ Traditional methods to train robots require powerful infrastructure and extremel
 
 But creating a precise digital twin is both very difficult and time consuming.
 
-This projects here settles for a low level of digital resemblance but uses technics like domain randomization to allow the transfer the policy.
-The goal here is also to evaluate the impact of fine-tuning (applying reinforcement learning in the real environment) and see how fast a robot adapt to the real world.
+This projects here settles for a low level of digital resemblance but uses technics like domain randomization to allow the policy transfer.
+The goal here is also to evaluate the impact of fine-tuning (applying reinforcement learning in the real environment) and see how fast a robot adapts to the real world.
 
 Another aspect of this project is to build intelligence through teaching (the robot will mimic individuals).
 
@@ -13,7 +13,7 @@ Another aspect of this project is to build intelligence through teaching (the ro
 
 <strong>Success Criteria:</strong> The robot should autonomously pick up a light object, like an apple, from point A and deliver it to point B, with under 50 hours of finetuning.
 
-More information at [Link Text](https://distrobotics.com)
+More information at [www.distrobotics.com](https://www.distrobotics.com/)
 
 ## Infra and Tools
 
@@ -91,32 +91,31 @@ python3.10 -m venv venv
 source venv/bin/activate
 pip install -r requirements.txt
 ```
-Try the robot in the simulation
+Test the robot simulation
 ```
-# For example
-python simulation.py --ROBOT_TYPE half
+python simulation.py --ROBOT_TYPE full
 ```
-### 2. Define a task and add it to the array of TASKS in **settings.py**
+### 2. Define a new task to learn and add it to the array of TASKS in **settings.py**
 
 Replace one of the placeholder value "" with the new task. (To avoid changing the dimension of the state)
 
 ### 3. Create a new reward logic in the reward function in **simulation.py**
 
-Define rewards for each step (e.g +1 if closer to the goal and -50 if the robot fell)
+Define rewards for each step (e.g +1 if moving closer to a target and -50 if the robot falls)
 
-### 4. (Optional) - Use a video of a subject performing the task and add it to TASKS_MIMIC in **settings.py**
+### 4. (Optional) - Use a video of a subject performing the task
 
 - Store a video (e.g TASK_NAME.mp4) in /src/mimic/
-- Create the frames (e.g):
+- Create the frames / pose estimations (e.g) by running the following:
 ```
 # For example
-python mimic.py --TASK squat
+python mimic.py --TASK task_name
 ```
 
-### 5. Define the pretraining level in **learning.py**
+### 5. (Optional) - Define the pretraining level in **learning.py**
 
 For example walking uses the standing weights, so if the standing weights have already been trained,
-one can specify in learning.py that walking should use the weights of standing. For instance, one could add:
+one can specify in learning.py that walking should use the weights of standing. For example, one could add:
 
 ```
 if self.task == "walking":
@@ -128,13 +127,13 @@ if self.task == "walking":
 Train the weights (and specify certain parameters), e.g:
 
 ```
-python learning.py --TASK walking --LEARNING_RATE 0.0001 --ROBOT_TYPE full
+python learning.py --TASK walking --LEARNING_RATE 0.0001 --ROBOT_TYPE legs
 ```
 
 Then test:
 
 ```
-python learning.py --TESTING True --TASK walking --LEARNING_RATE 0.0001 --ROBOT_TYPE full
+python learning.py --TESTING True --TASK walking --LEARNING_RATE 0.0001 --ROBOT_TYPE legs
 ```
 
 Reinforce the models by adding perturbations (to make it transferable to the real robot)
@@ -146,7 +145,7 @@ python learning.py --ROBUST True
 If available for the task, use pose estimations to improve learning  
 
 ```
-python learning.py --MIMIC True
+python learning.py --TASK task_name --MIMIC True
 ```
 
 Save the changes to the code and the newly generate weights:
@@ -167,9 +166,11 @@ python control.py      # Easiest is to connect remotely with VStudio
 
 ### 8. Reinforce the model weights using real robot data (Human Feedback)
 
-TODO: Sending arrays of state-action-rewards tuples to a dedicated server for centralized training
+TODO: Sending arrays of state-action-rewards tuples to a dedicated server for centralised training
 
 ### 9. Use vision
+
+TODO: Connect the cameras
 
 Setup 2 background processes on the PI:
 

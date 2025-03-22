@@ -8,12 +8,12 @@ MINI_BATCH_SIZE = 64
 NUM_WORKERS = 64
 ENTROPY_BONUS = 0.01         # 0.01 better for velocity control at 30Hz - 0.001 at 120 Hz
 
-TASK = "squat"            # standing standing_up walking
-ROBOT_TYPE = "legs"               # legs half full
+TASK = "standing"            # standing standing_up walking
+ROBOT_TYPE = "half"               # legs half full
 TESTING = False
 MAX_EPISODES = 500000
 ROBUST = False
-MIMIC = True
+MIMIC = False
 LOW_ENERGY = False
 
 REAL = False

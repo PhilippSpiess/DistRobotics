@@ -10,7 +10,7 @@ import csv
 import json
 
 from helpers import timeit
-from settings import *
+from config_simulation import *
 
 PLOT = True  # Set to True to plot the images with detections
 VISION_MODEL = "https://tfhub.dev/tensorflow/efficientdet/d0/1"

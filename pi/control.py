@@ -17,7 +17,7 @@ from digitalio import Direction
 import smbus
 from adafruit_motor import servo
 
-from settings import TASKS
+from config_simulation import TASKS
 from learning import PPOAgent, TRAINING_BATCH
 
 MANUAL_CALIBRATION = False
@@ -313,7 +313,7 @@ try:
             while True:
 
                 angles_encoder = [(read_as5600_angle(val) - ANGLE_OFFSET[val]) * ANGLE_DIRECTION_ENCODER[val] for val in
-                                  range(NUM_MOTORS)]  # Replace with : NUM_MOTORS
+                                  range(NUM_MOTORS)]
                 angles = np.mod(np.array(angles_encoder) + np.pi, 2 * np.pi) - np.pi
                 print("Angles encoder", angles_encoder)
 
@@ -329,7 +329,6 @@ try:
 
     if AUTO_CALIBRATION:
 
-        # Automated calibration - Using the absolute encoder
         calibrating = [True] * NUM_MOTORS  # Track which motors are still calibrating
 
         while any(calibrating):  # Continue until all motors are calibrated

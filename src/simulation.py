@@ -13,8 +13,8 @@ import os
 import argparse
 
 from mimic import load_mimic
-from settings import *
-from parameters import *
+from config_simulation import *
+from config_learning import *
 from helpers import timeit, create_random_terrain
 
 random.seed(42)
@@ -159,7 +159,7 @@ class SimulationEnv:
     def initialize_angles(self, robot, init_target_frames=None, start_pos_robot=None):
 
         # Set specific angles with random perturbation for each joint
-        if MIMIC:
+        if not self.is_mimicking:
 
             base_angles = [0] * len(self.JOINTS)
             for joint_index in range(len(self.JOINTS)):

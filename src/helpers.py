@@ -9,7 +9,8 @@ from PIL import Image
 import numpy as np
 import pybullet as p
 import pybullet_data
-from settings import HEIGHT_SCALE, FRICTION_LOW, FRICTION_HIGH
+
+from config_simulation import HEIGHT_SCALE, FRICTION_LOW, FRICTION_HIGH
 
 # Constants
 TEXTURE_SIZE = 256

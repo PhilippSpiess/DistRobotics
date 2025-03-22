@@ -8,7 +8,7 @@ import cv2
 TASKS = ["standing", "standing_up", "walking", "jumping","squat","","","","","","","","","","","","","","",""]
 
 NUM_BOTS = 256
-FRICTION = 2
+FRICTION = 0.9
 PARALLEL_SIM = False
 SIMULATION_FREQUENCY = 30       # 30Hz for velocity - 120 Hz for torque
 BLOCKING = False
@@ -19,7 +19,7 @@ MAX_RPM = 16
 
 # Domain randomization
 HEIGHT_SCALE = 0.0
-FRICTION_LOW, FRICTION_HIGH = 2, 2
+FRICTION_LOW, FRICTION_HIGH = 0.9, 1
 NOISE = 0.3
 
 NOISE_ANGLE_STANDING_UP = 0.75

@@ -18,10 +18,11 @@ import time
 
 from simulation import SimulationEnv, SimulationParallelEnv
 from helpers import timeit, create_folder_if_not_exists, add_log_entry
-from parameters import *
+from config_learning import *
+from config_simulation import *
 
 plt.figure(figsize=(20, 10))
-plt.subplots_adjust(left=0.05, right=0.95, top=0.95, bottom=0.05)
+plt.subplots_adjust(left=0.05, right=0.95, top=0.95, bottom=0.01)
 
 tf.random.set_seed(42)
 random.seed(42)
@@ -284,9 +285,9 @@ class PPOAgent:
         if episode % 500 == 0:
             plt.plot(self.episodes_, self.average_, 'blue')
             plt.plot(self.episodes_, self.scores_deterministic_, 'black')
-            plt.title(FOLDER_NAME.split("/")[-1].replace("_"," ") + " - PPO training cycle", fontsize=14)
-            plt.ylabel('Score', fontsize=18)
-            plt.xlabel('Episodes', fontsize=18)
+            plt.title(FOLDER_NAME.split("/")[-1].replace("_"," ") + " - PPO training cycle", fontsize=16)
+            plt.ylabel('Score', fontsize=20)
+            plt.xlabel('Episodes', fontsize=20)
             plt.xticks(fontsize=14)
             plt.yticks(fontsize=14)
             plt.grid(True)

@@ -22,7 +22,7 @@ from config_learning import *
 from config_simulation import *
 
 plt.figure(figsize=(20, 10))
-plt.subplots_adjust(left=0.05, right=0.95, top=0.95, bottom=0.01)
+plt.subplots_adjust(left=0.05, right=0.95, top=0.95, bottom=0.1)
 
 tf.random.set_seed(42)
 random.seed(42)

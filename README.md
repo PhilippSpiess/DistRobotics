@@ -9,9 +9,12 @@ The goal here is also to evaluate the impact of fine-tuning (applying reinforcem
 
 Another aspect of this project is to build intelligence through teaching (the robot will mimic individuals).
 
-<strong>Challenge:</strong> Building a humanoid robot from scratch for less than <strong>1000 CHF</strong> within <strong>12 months</strong>. (Currently at month 7)
+<strong>Challenge:</strong> Building a humanoid robot from scratch for less than <strong>1000$</strong> within <strong>12 months</strong>. (Currently at month 7)
 
 <strong>Success Criteria:</strong> The robot should autonomously pick up a light object, like an apple, from point A and deliver it to point B, with under 50 hours of finetuning.
+
+The robot parts to print are in freecad/ROBOT.FCStd, all the items to order are in parts.csv and the electronics schema is robot.kicad_sch.
+The simulation code is in /src and the code to run on the robot is in /pi.
 
 More information at [www.distrobotics.com](https://www.distrobotics.com/)
 

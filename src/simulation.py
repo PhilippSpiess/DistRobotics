@@ -419,6 +419,7 @@ class SimulationEnv:
 
         return orientation_penalty_res + angle_velocity_penalty_res + end_effector_penalty_res + center_mass_penalty_res
 
+    """
     def get_state(self, idx=None):
         
         if idx is not None:  # Parallel case
@@ -453,7 +454,32 @@ class SimulationEnv:
         next_state += self.task_state  # One-hot encoded task representation
 
         return next_state
+    """
 
+    def get_state(self, robot, idx=None):
+
+        action = self.action if idx is None else self.action[idx]
+        next_state = []
+        for j in range(len(self.JOINTS)):
+
+            state_noise = np.random.uniform(1 - self.NOISE, 1 + self.NOISE) if self.robust else 1
+
+            joint_info =self.p.getJointInfo(robot, j)
+            joint_name = joint_info[1].decode("utf-8")
+            joint_state = self.p.getJointState(robot, j)
+            position = 2 * ((joint_state[0] - self.MIN_POSITIONS[j]) / (self.MAX_POSITIONS[j] - self.MIN_POSITIONS[j])) - 1 #  ( joint_state[0] - self.MIN_POSITIONS[j] ) / (self.MAX_POSITIONS[j] - self.MIN_POSITIONS[j])     # normalised [0, 1]
+            velocity = joint_state[1]                                                                                   # radian/s [-1, 1]
+            joint_action = action[j] # joint_state[3] # torque + external force                                         # between [-1, 1]
+            next_state += [position * state_noise, velocity * state_noise, joint_action * state_noise]
+            # The reaction force is not used : joint_state[2]
+
+        state_noise = np.random.uniform(1 - self.NOISE, 1 + self.NOISE) if self.robust else 1
+
+        _,_,_, roll, pitch, yaw = self.get_robot_position_angle(robot)
+        next_state += [roll * state_noise, pitch * state_noise, yaw * state_noise] # yaw will be 0 for the real robot
+        next_state += self.task_state
+
+        return next_state
 
     def set_target_frames(self):
 
@@ -533,7 +559,7 @@ class SimulationEnv:
         else:
             init_target_frames = None
             start_pos_robot = self.start_pos
-            init_orientation_x, init_orientation_y, init_orientation_z = 0, ORIENTATION_OFFSET_PITCH ,0
+            init_orientation_x, init_orientation_y, init_orientation_z = 0, 0 ,0 #  0, ORIENTATION_OFFSET_PITCH ,0
         perturbation = np.random.uniform(-0.01, 0.01, size=3)
         self.upright_orientation =self.p.getQuaternionFromEuler([1.57+perturbation[0]+init_orientation_x, perturbation[1]+init_orientation_y, perturbation[2]+init_orientation_z])
         if robot is None:
@@ -615,7 +641,8 @@ class SimulationEnv:
             self.robot_id, self.upright, self.joints_data, self.links_data = self.generate_robot(self.frame_counter)
         else:
             _ , self.upright, self.joints_data, self.links_data = self.generate_robot(self.frame_counter, self.robot_id)
-        self.state = self.get_state()
+        # self.state = self.get_state()
+        self.state = self.get_state(self.robot_id)
         self.state.append(self.frame_counter / len(self.mimic_frames))
         self.done = False
         self.reward = None
@@ -673,7 +700,8 @@ class SimulationEnv:
 
         new_upright, new_joints_data, new_links_data = self.get_links_joints_data(self.robot_id)
 
-        self.state = self.get_state()
+        self.state = self.get_state(self.robot_id)
+        #self.state = self.get_state()
         self.state.append(self.frame_counter / len(self.mimic_frames))
 
         reward, self.done = self.get_reward(new_upright, new_joints_data, new_links_data, self.upright, self.joints_data, self.links_data)
@@ -737,7 +765,8 @@ class SimulationParallelEnv(SimulationEnv):
             self.action_transformed.append(self.transform_action(action))
             self.reward.append(0)
             self.done.append(False)
-            state = self.get_state(idx)
+            # state = self.get_state(idx)
+            state = self.get_state(self.robot_id[idx], idx)
             state.append( start_frame / len(self.mimic_frames))
             self.state.append(state)
             self.init_offset_xy.append(self.start_pos[:2])
@@ -751,7 +780,8 @@ class SimulationParallelEnv(SimulationEnv):
             self.action[idx] = action
             self.action_transformed[idx] = self.transform_action(action)
             self.done[idx] = False
-            state = self.get_state(idx)
+            # state = self.get_state(idx)
+            state = self.get_state(self.robot_id[idx], idx)
             state.append(self.frame_counter[idx] / len(self.mimic_frames))
             self.state[idx] = state
 
@@ -774,7 +804,8 @@ class SimulationParallelEnv(SimulationEnv):
 
             new_upright, new_joints_data, new_links_data = self.get_links_joints_data(robot_id)
 
-            self.state[idx] = self.get_state(idx)
+            #self.state[idx] = self.get_state(idx)
+            self.state[idx] = self.get_state(robot_id, idx)
             self.state[idx].append(self.frame_counter[idx] / len(self.mimic_frames))
 
             reward, self.done[idx] = self.get_reward(new_upright, new_joints_data, new_links_data, self.upright[idx], self.joints_data[idx], self.links_data[idx])

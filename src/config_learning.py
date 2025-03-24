@@ -9,7 +9,7 @@ NUM_WORKERS = 64
 ENTROPY_BONUS = 0.01         # 0.01 better for velocity control at 30Hz - 0.001 at 120 Hz
 
 TASK = "standing"            # standing standing_up walking
-ROBOT_TYPE = "half"               # legs half full
+ROBOT_TYPE = "legs"               # legs half full
 TESTING = False
 MAX_EPISODES = 500000
 ROBUST = False

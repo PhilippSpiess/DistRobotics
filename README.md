@@ -20,7 +20,7 @@ More information at [www.distrobotics.com](https://www.distrobotics.com/)
 
 ## Infra and Tools
 
-- Python 3.10.4
+- Python 3.10
 - cuda-toolkit-12-4, nvidia-driver-535
 - GPU Nvidia RTX 4090: simulations & deep learning
 - Raspberry PIs 5: robot compute engine
@@ -90,7 +90,7 @@ More information at [www.distrobotics.com](https://www.distrobotics.com/)
 
 ```
 git pull
-python3.10 -m venv venv
+python3 -m venv venv
 source venv/bin/activate
 pip install -r requirements.txt
 ```

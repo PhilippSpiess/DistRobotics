@@ -285,9 +285,9 @@ class SimulationEnv:
             distance_forward_right_foot = links_data["right_foot"]["x"] - previous_links_data["right_foot"]["x"]
             distance_forward_root = links_data["root"]["x"] - previous_links_data["root"]["x"]
 
-            reward_walking += SIMULATION_FREQUENCY * distance_forward_left_foot if distance_forward_right_foot <= 1 / SIMULATION_FREQUENCY / 5 else 0  # min(1, )
-            reward_walking += SIMULATION_FREQUENCY * distance_forward_right_foot if distance_forward_left_foot <= 1 / SIMULATION_FREQUENCY / 5 else 0   # min(1, )
-            reward_walking += SIMULATION_FREQUENCY * distance_forward_root   # min(1, )
+            reward_walking += 4*SIMULATION_FREQUENCY * distance_forward_left_foot if distance_forward_right_foot <= 1 / SIMULATION_FREQUENCY / 5 else 0  # min(1, )
+            reward_walking += 4*SIMULATION_FREQUENCY * distance_forward_right_foot if distance_forward_left_foot <= 1 / SIMULATION_FREQUENCY / 5 else 0   # min(1, )
+            reward_walking += 4*SIMULATION_FREQUENCY * distance_forward_root   # min(1, )
 
         if self.low_energy:
 

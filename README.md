@@ -1,22 +1,30 @@
 # Dist Robotics
 
-Traditional methods to train robots require powerful infrastructure and extremely high similarity between the simulated and real environments, a digital twin, where a control model is learned and then transfered to the real robot.
+Traditional methods for training robots require powerful infrastructure and an extremely high similarity between simulated and real environments - often in the form of a digital twin - where a control model is learned in simulation and then transferred to the real robot.
 
-But creating a precise digital twin is both very difficult and time consuming.
+However, creating an accurate digital twin is both difficult and time-consuming.
 
-This project settles for a low level of digital resemblance but investigates technics like domain randomization to achieve the policy transfer.
-The goal here is also to evaluate the impact of fine-tuning (applying reinforcement learning in the real environment) and see how fast a robot adapts to the real world.
+The simulation used in this project trades accuracy for speed and flexibility. Instead of investing in a precise digital twin, we explore techniques like **domain randomization** to enable policy transfer. It also aims to evaluate the impact of **fine-tuning** (i.e., applying reinforcement learning in the real environment) and assess how quickly a robot can adapt to the real world.
 
-Another aspect of this project is to build intelligence through teaching (the robot will mimic individuals).
+Another key aspect of the project is building intelligence through teaching: the robot will learn by **mimicking human behavior**.
 
-<strong>Challenge:</strong> Building a humanoid robot from scratch for less than <strong>1000$</strong> within <strong>12 months</strong>. (Currently at month 7)
+#### Challenge
+Build a humanoid robot from scratch for under **$1000** within **12 months**.  
+*(Currently at month 7.)*
 
-<strong>Success Criteria:</strong> The robot should autonomously pick up a light object, like an apple, from point A and deliver it to point B, with under 50 hours of finetuning.
+#### Success Criteria
+The robot should autonomously pick up a light object (e.g., an apple) from **point A** and deliver it to **point B** after no more than **50 hours of fine-tuning**.
 
-The robot parts to print are in freecad/ROBOT.FCStd and should be assembled with M3,M4 and M6 screws/bolts. All the electronics components to order are in parts.csv and the electronics schema is robot.kicad_sch.
-The code to teach the robot offline is in /src and the code to run on the real robot is in /pi.
+#### Files
+
+- Printable parts are located in `freecad/ROBOT.FCStd` and should be assembled using **M3, M4, and M6** screws/bolts.
+- All electronic components are listed in `parts.csv`.
+- The electronics schematic is in `robot.kicad_sch`.
+- Code for offline training is in `/src`, and code for running on the real robot is in `/pi`.
 
 More information at [www.distrobotics.com](https://www.distrobotics.com/)
+
+---
 
 ## Infra and Tools
 
@@ -27,6 +35,8 @@ More information at [www.distrobotics.com](https://www.distrobotics.com/)
 - FreeCad 0.21.2: Parts design
 - Prusa & Ender 3 V3 (Creality): 3D print robot parts
 - PyBullet (stable release 3.2.4) - 2022: Physics simulation engine
+
+---
 
 ## Models
 
@@ -45,7 +55,6 @@ More information at [www.distrobotics.com](https://www.distrobotics.com/)
 - Download the model: https://tfhub.dev/google/faster_rcnn/openimages_v4/inception_resnet_v2/1?tf-hub-format=compressed
 - Intel Midas 2 - For depth estimation: https://tfhub.dev/intel/midas/v2/2
 - Get the model: https://www.kaggle.com/models/intel/midas/tensorFlow1/v2/2?tfhub-redirect=true
-- A VLM transformer: more powerful vision features extraction - TODO
 
 #### Pose estimation from videos
 
@@ -62,6 +71,8 @@ More information at [www.distrobotics.com](https://www.distrobotics.com/)
 #### Tasks verification
 
 - Voting mechanism: TODO
+
+---
 
 ## Main methods from the following papers
 
@@ -83,6 +94,8 @@ More information at [www.distrobotics.com](https://www.distrobotics.com/)
 - Microphone: Mini USB Microphone Audio        # Receive audio commands
 - Speakers: Max98357 I2S 3W Class D Amplifier  # Respond to audio commands
 ```
+
+---
 
 ## Using this code
 
@@ -186,6 +199,8 @@ libcamera-still -t 0 --timelapse 1000 -n -o "image_%04d.jpg"
 python vision_depth.py
 ```
 This will constantly analyse the view of the robot an create a additional vision features that the robot can use to improve its state.
+
+---
 
 ## Pictures
 

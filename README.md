@@ -1,10 +1,10 @@
 # Dist Robotics
 
-Traditional methods to train robots require powerful infrastructure and extremely high similarity between the simulated and real environments, a digital twin, where a control model is learnt and then transfered to the real robot.
+Traditional methods to train robots require powerful infrastructure and extremely high similarity between the simulated and real environments, a digital twin, where a control model is learned and then transfered to the real robot.
 
 But creating a precise digital twin is both very difficult and time consuming.
 
-This projects here settles for a low level of digital resemblance but uses technics like domain randomization to allow the policy transfer.
+This project settles for a low level of digital resemblance but investigates technics like domain randomization to achieve the policy transfer.
 The goal here is also to evaluate the impact of fine-tuning (applying reinforcement learning in the real environment) and see how fast a robot adapts to the real world.
 
 Another aspect of this project is to build intelligence through teaching (the robot will mimic individuals).
@@ -13,8 +13,8 @@ Another aspect of this project is to build intelligence through teaching (the ro
 
 <strong>Success Criteria:</strong> The robot should autonomously pick up a light object, like an apple, from point A and deliver it to point B, with under 50 hours of finetuning.
 
-The robot parts to print are in freecad/ROBOT.FCStd, all the items to order are in parts.csv and the electronics schema is robot.kicad_sch.
-The simulation code is in /src and the code to run on the robot is in /pi.
+The robot parts to print are in freecad/ROBOT.FCStd and should be assembled with M3,M4 and M6 screws/bolts. All the electronics components to order are in parts.csv and the electronics schema is robot.kicad_sch.
+The code to teach the robot offline is in /src and the code to run on the real robot is in /pi.
 
 More information at [www.distrobotics.com](https://www.distrobotics.com/)
 
@@ -40,8 +40,8 @@ More information at [www.distrobotics.com](https://www.distrobotics.com/)
 
 #### Vision
 
-- Faster R-CNN, a well-known object detection framework, combined with Inception-ResNet v2 - 2019
-- Pre-trained on the Open Images V4 dataset - 600 classes - XYZ box coordinates
+- Inception-ResNet v2 - 2019
+- Pre-trained on the Open Images V4 dataset - 600 classes
 - Download the model: https://tfhub.dev/google/faster_rcnn/openimages_v4/inception_resnet_v2/1?tf-hub-format=compressed
 - Intel Midas 2 - For depth estimation: https://tfhub.dev/intel/midas/v2/2
 - Get the model: https://www.kaggle.com/models/intel/midas/tensorFlow1/v2/2?tfhub-redirect=true

@@ -181,6 +181,11 @@ class PPOAgent:
             self.load_pretrained(self.task)
         elif self.task == "walking":
             self.load_pretrained("standing")
+        else:
+            try:
+                self.load_pretrained(self.task)
+            except:
+                pass
 
     def act(self, state):
 

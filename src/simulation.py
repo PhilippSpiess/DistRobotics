@@ -670,12 +670,13 @@ class SimulationEnv:
         #if self.robot_type == "full":
         #    vision_object, x, y, z = self.get_first_person_view(self.robot_id)
 
-        new_upright, new_joints_data, new_links_data = self.get_links_joints_data(self.robot_id)
+        old_upright, old_joints_data, old_links_data = self.upright, self.joints_data, self.links_data
+        self.upright, self.joints_data, self.links_data = self.get_links_joints_data(self.robot_id)
 
         self.state = self.get_state()
         self.state.append(self.frame_counter / len(self.mimic_frames))
 
-        reward, self.done = self.get_reward(new_upright, new_joints_data, new_links_data, self.upright, self.joints_data, self.links_data)
+        reward, self.done = self.get_reward(self.upright, self.joints_data, self.links_data, old_upright, old_joints_data, old_links_data)
         reward_mimic = self.get_reward_mimic( self.frame_counter, self.end_frame, self.joints_data, self.links_data)
         if reward_mimic is None:
             self.done = 1
@@ -685,9 +686,7 @@ class SimulationEnv:
 
         self.action = raw_action
         self.action_transformed = current_action_transformed
-        self.upright = new_upright
-        self.joints_data = new_joints_data
-        self.links_data = new_links_data
+
         if self.is_mimicking:
             self.frame_counter += FRAMES_FREQUENCY / SIMULATION_FREQUENCY
 
@@ -771,12 +770,13 @@ class SimulationParallelEnv(SimulationEnv):
         for idx, robot_id in enumerate(self.robot_id):
             current_action_transformed = current_action_transformed_list[idx]
 
-            new_upright, new_joints_data, new_links_data = self.get_links_joints_data(robot_id)
+            old_upright, old_joints_data, old_links_data = self.upright[idx], self.joints_data[idx], self.links_data[idx]
+            self.upright[idx], self.joints_data[idx], self.links_data[idx] = self.get_links_joints_data(robot_id)
 
             self.state[idx] = self.get_state(idx)
             self.state[idx].append(self.frame_counter[idx] / len(self.mimic_frames))
 
-            reward, self.done[idx] = self.get_reward(new_upright, new_joints_data, new_links_data, self.upright[idx], self.joints_data[idx], self.links_data[idx])
+            reward, self.done[idx] = self.get_reward(self.upright[idx], self.joints_data[idx], self.links_data[idx], old_upright, old_joints_data, old_links_data)
 
             reward_mimic = self.get_reward_mimic(self.frame_counter[idx], self.end_frame[idx], self.joints_data[idx], self.links_data[idx], self.init_offset_xy[idx])
             if reward_mimic is None:
@@ -787,9 +787,6 @@ class SimulationParallelEnv(SimulationEnv):
 
             self.action[idx] = raw_actions[idx]
             self.action_transformed[idx] = current_action_transformed
-            self.upright[idx] = new_upright
-            self.joints_data[idx] = new_joints_data
-            self.links_data[idx] = new_links_data
 
             if self.is_mimicking:
                 self.frame_counter[idx] += FRAMES_FREQUENCY / SIMULATION_FREQUENCY

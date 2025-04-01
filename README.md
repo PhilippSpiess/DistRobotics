@@ -1,10 +1,10 @@
 # Dist Robotics
 
-Traditional methods for training robots require powerful infrastructure and an extremely high similarity between simulated and real environments - often in the form of a digital twin - where a control model is learned in simulation and then transferred to the real robot.
+Traditional methods for training robots require powerful infrastructure and an extremely high similarity between simulated and real environments, often in the form of a digital twin, where a control model is learned in simulation and then transferred to the real robot.
 
 However, creating an accurate digital twin is both difficult and time-consuming.
 
-The simulation used in this project trades accuracy for speed and flexibility. Instead of investing in a precise digital twin, we explore techniques like **domain randomization** to enable policy transfer. It also aims to evaluate the impact of **fine-tuning** (i.e., applying reinforcement learning in the real environment) and assess how quickly a robot can adapt to the real world.
+The simulation used in this project prioritizes speed and flexibility over accuracy. Rather than investing in a highly precise digital twin, we explore techniques such as domain randomization to enable policy transfer. The project also aims to evaluate the impact of fine-tuning—i.e., applying reinforcement learning in the real environment—and assess how quickly a robot can adapt to the real world.
 
 Another key aspect of the project is building intelligence through teaching: the robot will learn by **mimicking human behavior**.
 

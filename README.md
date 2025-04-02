@@ -2,24 +2,22 @@
 
 Traditional methods for training robots require powerful infrastructure and high similarity between simulated and real environments, often in the form of a digital twin, where a control model is learned in simulation and then transferred to the real robot.
 
-However, creating an accurate digital twin is both difficult and time-consuming.
+In this project, we prioritize development speed and flexibility over accuracy. Rather than investing in a highly precise digital twin, we explore techniques such as domain randomization to facilitate policy transfer. We also aim to evaluate the impact of fine-tuning (applying reinforcement learning in the real environment) and to assess how quickly a robot can adapt to the real world.
 
-In this project, we prioritize development speed and flexibility over accuracy. Rather than investing in a highly precise digital twin, we explore techniques such as domain randomization to enable policy transfer. The project also aims to evaluate the impact of fine-tuning (i.e., applying reinforcement learning in the real environment) and to assess how quickly a robot can adapt to the real world.
-
-Other key aspects of the project include building intelligence through teaching: the robot will learn by mimicking human behavior, with the community contributing to the development of tasks that robots can learn.
+Other key aspects of this project include building intelligence through teaching: the robot will learn by mimicking human behavior, with the community contributing to the development of tasks that robots can learn.
 
 The end goal is a system where anyone can assemble their own robot and contribute to a shared global model by writing reward functions, making demonstrations, evaluating real-world robot trajectories, and validating or rejecting new tasks proposed by others.
 
-**Challenge:** Build a humanoid robot from scratch for under **$1000** within **12 months**.
+**Challenge:** Building a humanoid robot from scratch for under **$1000** within **12 months**.
 
 **Success Criteria:** The robot should autonomously pick up a light object (e.g., an apple) from **point A** and deliver it to **point B**.
 
 #### Files
 
-- Printable parts are located in `freecad/ROBOT.FCStd` and should be assembled using **M3, M4, and M6** screws/bolts.
+- Printable parts are located in `freecad/ROBOT.FCStd` and should be assembled using M3, M4, and M6 screws/bolts.
 - All electronic components are listed in `parts.csv`.
 - The electronics schematic is in `robot.kicad_sch`.
-- Code for offline training is in `/src`, and code for running on the real robot is in `/pi`.
+- Code for offline training is in `/src`, and the code for running on the real robot is `/pi/control.py`.
 
 More information at [www.distrobotics.com](https://www.distrobotics.com/)
 

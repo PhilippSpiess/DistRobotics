@@ -1,19 +1,18 @@
 # Dist Robotics
 
-Traditional methods for training robots require powerful infrastructure and an extremely high similarity between simulated and real environments, often in the form of a digital twin, where a control model is learned in simulation and then transferred to the real robot.
+Traditional methods for training robots require powerful infrastructure and high similarity between simulated and real environments, often in the form of a digital twin, where a control model is learned in simulation and then transferred to the real robot.
 
 However, creating an accurate digital twin is both difficult and time-consuming.
 
-The simulation used in this project prioritizes speed and flexibility over accuracy. Rather than investing in a highly precise digital twin, we explore techniques such as domain randomization to enable policy transfer. The project also aims to evaluate the impact of fine-tuning—i.e., applying reinforcement learning in the real environment—and assess how quickly a robot can adapt to the real world.
+In this project, we prioritize development speed and flexibility over accuracy. Rather than investing in a highly precise digital twin, we explore techniques such as domain randomization to enable policy transfer. The project also aims to evaluate the impact of fine-tuning (i.e., applying reinforcement learning in the real environment) and to assess how quickly a robot can adapt to the real world.
 
-Another key aspect of the project is building intelligence through teaching: the robot will learn by **mimicking human behavior**.
+Other key aspects of the project include building intelligence through teaching: the robot will learn by mimicking human behavior, with the community contributing to the development of tasks that robots can learn.
 
-#### Challenge
-Build a humanoid robot from scratch for under **$1000** within **12 months**.  
-*(Currently at month 7.)*
+The end goal is a system where anyone can assemble their own robot and contribute to a shared global model by writing reward functions, making demonstrations, evaluating real-world robot trajectories, and validating or rejecting new tasks proposed by others.
 
-#### Success Criteria
-The robot should autonomously pick up a light object (e.g., an apple) from **point A** and deliver it to **point B** after no more than **50 hours of fine-tuning**.
+**Challenge:** Build a humanoid robot from scratch for under **$1000** within **12 months**.
+
+**Success Criteria:** The robot should autonomously pick up a light object (e.g., an apple) from **point A** and deliver it to **point B**.
 
 #### Files
 
